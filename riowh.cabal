@@ -1,0 +1,75 @@
+cabal-version:      2.4
+name:               ray-tracer
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             ichi-raven
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files:
+    CHANGELOG.md
+    README.md
+
+library
+    exposed-modules:  RayTracer.BVH
+                      RayTracer.Camera
+                      RayTracer.Color
+                      RayTracer.Geometry
+                      RayTracer.Material
+                      RayTracer.Output
+                      RayTracer.Random
+                      RayTracer.Ray
+                      RayTracer.Scene
+                      RayTracer.Utility
+
+    -- Modules included in this library but not exported.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:    base ^>=4.16.4.0,
+                      array,
+                      simple-vec3,
+                      random,
+                      text,
+                      parallel,
+                      deepseq,
+                      time
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+executable rayTracer
+    main-is:          Main.hs
+
+    -- Modules included in this executable, other than Main.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:
+        base ^>=4.16.4.0,
+        ray-tracer,
+        array,
+        simple-vec3,
+        random,
+        text,
+        parallel,
+        deepseq,
+        time
+
+    hs-source-dirs:   app
+    default-language: Haskell2010
+    ghc-options: -O3 -threaded -j4 "-with-rtsopts=-N8"
+    --ghc-options: -O2 -threaded -fprof-auto -eventlog -j4 "-with-rtsopts=-N -p -s -hc -lf -i0.1"
