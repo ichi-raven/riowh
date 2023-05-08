@@ -25,7 +25,6 @@ data Scene = Scene
 buildScene :: [HittableType] -> Int -> Int -> Scene
 buildScene objects = Scene (createBVH objects)
 
-
 -- generate random spheres (amax - a) * (bmax - bmin) times
 makeRandomSpheres :: StatefulGen genType m => Int -> Int -> Int -> (Int, Int) -> genType -> m [HittableType]
 makeRandomSpheres a amax b (bmin, bmax) gen = do
