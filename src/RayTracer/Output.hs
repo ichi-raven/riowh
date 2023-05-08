@@ -6,7 +6,11 @@ module RayTracer.Output
 import System.IO ( hClose, hPutStr, openFile, IOMode(WriteMode) )
 import qualified Data.Text as T
 
+
 import RayTracer.Utility
+import RayTracer.Color
+
+type Text = T.Text
 
 -- header string for ppm
 ppmHeader :: Int -> Int -> Text
@@ -24,8 +28,8 @@ ppmFormat image = T.unlines [showColor (image ! (x, y)) | y <- [0..height - 1], 
                       height    = getImageHeight  image
 
 -- combined output
-outputImageByPPM :: Image -> String -> IO()
-outputImageByPPM image outputFileName = do
+outputImageByPPM :: String -> Image -> IO()
+outputImageByPPM outputFileName image = do
                                         let width   = getImageWidth   image
                                             height  = getImageHeight  image
                                         -- open file

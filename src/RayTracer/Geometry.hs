@@ -1,13 +1,37 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
+
 module RayTracer.Geometry
 (
     HittableType(..),
     AABB,
     hit,
     createAABB,
+    createBVH,
     module RayTracer.Ray
 ) where
 
 import RayTracer.Ray
+import RayTracer.Material
+import Prelude hiding (zipWith)
+
+data BVHNode = BVHNode
+  {
+    _aabb   :: !AABB,
+    _left   :: !HittableType,
+    _right  :: !HittableType
+  } deriving (Generic, NFData)
+
+data HittableType =
+  Sphere
+  {
+    _position :: !Point,
+    _radius   :: !Double,
+    _mat      :: !MaterialType
+  }
+  | BVH
+  {
+    _node :: !BVHNode
+  } deriving (Generic, NFData)
 
 data AABB = AABB
   {
@@ -56,3 +80,56 @@ hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
                               where aabb  = _aabb  node
                                     left  = _left  node
                                     right = _right node
+
+-- AABB
+
+-- create surrounding two bounding box
+surroundingAABB :: AABB -> AABB -> AABB
+surroundingAABB (AABB minPos1 maxPos1) (AABB minPos2 maxPos2) = AABB small big
+                                                              where small = zipWith min minPos1 minPos2
+                                                                    big   = zipWith max maxPos1 maxPos2
+
+hitAABB :: AABB -> Ray -> Double -> Double -> Bool
+hitAABB (AABB minPos maxPos) ray tmin tmax = all (>= 0.0) inSlabs
+                                    where invD    = mapCVec3 (_direction ray) (1.0 /)
+                                          tmp0    = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
+                                          tmp1    = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
+                                          t0s     = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
+                                          t1s     = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
+                                          inSlabs = toList $ t1s <-> t0s
+
+-- BVH
+compareObjects :: Int -> HittableType -> HittableType -> Bool
+compareObjects axis ht1 ht2 = case axis of
+                                  0 -> lx < rx
+                                  1 -> ly < ry
+                                  2 -> lz < rz
+                                  _ -> undefined -- !!!!!!!!!!!!!!!!!
+                                  where laabb = createAABB ht1
+                                        raabb = createAABB ht2
+                                        (lx, ly, lz) = toXYZ $ _minPos laabb
+                                        (rx, ry, rz) = toXYZ $ _minPos raabb
+
+-- quick sort AABB by specified axis
+sortObjects :: [HittableType] -> Int -> [HittableType]
+sortObjects [] axis     = []
+sortObjects [o] axis    = [o]
+sortObjects (o:xo) axis = sortObjects left axis ++ [o] ++ sortObjects right axis
+                      where left  = filter (compareObjects axis o) xo
+                            right = filter (not . compareObjects axis o) xo
+
+createBVH :: [HittableType] -> HittableType
+createBVH [object] = BVH $ BVHNode aabb object object
+                  where aabb = createAABB object
+createBVH [object1, object2] = BVH $ BVHNode (surroundingAABB laabb raabb) object1 object2
+                            where laabb = createAABB object1
+                                  raabb = createAABB object2
+createBVH objects = BVH $ BVHNode (surroundingAABB laabb raabb) leftNode rightNode
+                where axis    = length objects `mod` 3 -- random
+                      sorted  = sortObjects objects axis
+                      mid     = length sorted `div` 2
+                      (leftObjects, rightObjects) = splitAt mid sorted
+                      leftNode  = createBVH leftObjects
+                      rightNode = createBVH rightObjects
+                      laabb = _aabb $ _node leftNode
+                      raabb = _aabb $ _node rightNode

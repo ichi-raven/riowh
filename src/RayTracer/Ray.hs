@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
+
 module RayTracer.Ray
 (
     Ray(..),

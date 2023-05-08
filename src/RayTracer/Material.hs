@@ -1,6 +1,10 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
+
 module RayTracer.Material where 
 
 import RayTracer.Utility
+import RayTracer.Ray
+import RayTracer.Random
 
 data MaterialType = Lambertian
                 {
@@ -16,6 +20,21 @@ data MaterialType = Lambertian
                   _refIdx :: !Double
                 }
                 deriving (Generic, NFData)
+
+data ScatterResult = ScatterResult
+  {
+    _attenuation  :: !Color,
+    _scatter      :: !Ray
+  } deriving (Generic, NFData)
+
+data HitRecord = HitRecord
+  {
+    _point        :: !Point,
+    _normal       :: !Direction,
+    _t            :: !Double,
+    _frontFace    :: !Bool,
+    _surfaceMat   :: !MaterialType
+  } deriving (Generic, NFData)
 
 scatter :: StatefulGen genType m => MaterialType -> Ray -> HitRecord -> genType -> m (Maybe ScatterResult)
 scatter (Lambertian albedo) ray hr gen = do

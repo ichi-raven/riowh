@@ -1,11 +1,11 @@
-module RayTracer.Camera 
-(
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass, StandaloneDeriving #-}
 
-) where 
+module RayTracer.Camera where 
 
-import System.Random.StatefulS
+import System.Random.Stateful
 
-import RayTracer.Utility
+import RayTracer.Ray
+import RayTracer.Random
 
 data Camera = Camera
   {
