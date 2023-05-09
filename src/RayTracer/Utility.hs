@@ -45,9 +45,10 @@ deg2rad deg = deg * kPi / 180.0
 rad2deg :: Double -> Double
 rad2deg rad = rad / kPi * 180.0
 
-toList :: CVec3 -> [Double]
-toList src = [x] ++ [y] ++ [z]
-    where (x, y, z) = toXYZ src
+-- too slow
+-- toList :: CVec3 -> [Double]
+-- toList src = [x, y, z]
+--     where (x, y, z) = toXYZ src
 
 mapCVec3 :: CVec3 -> (Double -> Double) -> CVec3
 mapCVec3 src f = fromXYZ (f x, f y, f z)

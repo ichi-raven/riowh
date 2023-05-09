@@ -17,12 +17,11 @@ import Prelude hiding (zipWith)
 data Scene = Scene
   {
     _graphRoot      :: !HittableType,
-    _spp            :: !Int,
     _recursiveDepth :: !Int
   } deriving (Generic, NFData)
 
 -- eta reduce
-buildScene :: [HittableType] -> Int -> Int -> Scene
+buildScene :: [HittableType] -> Int -> Scene
 buildScene objects = Scene (createBVH objects)
 
 -- generate random spheres (amax - a) * (bmax - bmin) times
@@ -62,4 +61,4 @@ createRandomSpheres seed = presetSpheres ++ randomSpheres
                                               Sphere (fromXYZ (-4.0,  1.0, 0))  1.0   (Lambertian (fromXYZ (0.4, 0.2, 0.1))),
                                               Sphere (fromXYZ (4.0,   1.0, 0))  1.0   (Metal      (fromXYZ (0.7, 0.6, 0.5)) 0.0)
                                             ]
-                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (-11) 11 (-11) (-11, 11)
+                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (-10) 10 (-10) (-10, 10)

@@ -3,9 +3,11 @@ module RayTracer.Output
     outputImageByPPM
 ) where 
 
+import Control.Parallel.Strategies
+import Control.DeepSeq
 import System.IO ( hClose, hPutStr, openFile, IOMode(WriteMode) )
 import qualified Data.Text as T
-
+import GHC.Conc (numCapabilities)
 
 import RayTracer.Utility
 import RayTracer.Color
@@ -23,9 +25,10 @@ showColor color = T.pack $ show (floor (255.999 * r)) ++ " " ++ show (floor (255
 
 -- translate output image to ppm format
 ppmFormat :: Image -> Text
-ppmFormat image = T.unlines [showColor (image ! (x, y)) | y <- [0..height - 1],  x <- [0..width - 1]]
+ppmFormat image = T.unlines $ runEval $ parListChunk splitNum rdeepseq [showColor (image ! (x, y)) | y <- [0..height - 1],  x <- [0..width - 1]]
                 where width     = getImageWidth   image
                       height    = getImageHeight  image
+                      splitNum  = div (width * height) numCapabilities
 
 -- combined output
 outputImageByPPM :: String -> Image -> IO()

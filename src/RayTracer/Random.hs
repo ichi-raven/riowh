@@ -1,10 +1,7 @@
 module RayTracer.Random 
 (
-    randomColor,
-    randomUnitVector,
-    randomInUnitSphere,
-    randomInUnitHemisphere,
-    randomInUnitDisk
+    module RayTracer.Random,
+    module System.Random.Stateful
 ) where
 
 import System.Random.Stateful

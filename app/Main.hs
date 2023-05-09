@@ -9,7 +9,7 @@ import RayTracer.Camera
 import Data.Time
 
 import GHC.Conc (numCapabilities)
-import RayTracer.RayTracer (render)
+import RayTracer.RayTracer
 
 main :: IO ()
 main = do
@@ -19,7 +19,7 @@ main = do
     -- parameter
     let width           = 640
         height          = 480
-        spp             = 512
+        spp             = 10
         recursiveDepth  = 25
         outputFileName  = "output.ppm"
 
@@ -30,12 +30,12 @@ main = do
         vfov        = 20
         distToFocus = 10.0
         aperture    = 0.08
-        camera      = createCamera width height lookFrom lookAt up vfov aperture distToFocus
+        camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)
     let spheres = createRandomSpheres 42
     
-    let scene = buildScene spheres spp recursiveDepth
+    let scene = buildScene spheres recursiveDepth
 
     -- runtime threads num
     let nc = numCapabilities

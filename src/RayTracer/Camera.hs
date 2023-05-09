@@ -15,11 +15,12 @@ data Camera = Camera
     _vertical         :: !Direction,
     _lensRadius       :: !Double,
     _width            :: !Int,
-    _height           :: !Int
+    _height           :: !Int,
+    _spp              :: !Int
   } deriving (Generic, NFData)
 
-createCamera :: Int -> Int -> Point -> Point -> Direction -> Double -> Double -> Double -> Camera
-createCamera width height lookFrom lookAt up vfov aperture focusDist = Camera pos llc vertical horizontal lensRadius width height
+createCamera :: Int -> Int -> Int -> Point -> Point -> Direction -> Double -> Double -> Double -> Camera
+createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camera pos llc vertical horizontal lensRadius width height spp
           where pos             = lookFrom
                 theta           = deg2rad vfov
                 h               = tan (theta / 2)

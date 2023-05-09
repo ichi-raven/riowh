@@ -12,6 +12,8 @@ module RayTracer.Geometry
 
 import RayTracer.Ray
 import RayTracer.Material
+
+--import Control.Parallel
 import Prelude hiding (zipWith)
 
 data BVHNode = BVHNode
@@ -50,7 +52,8 @@ createAABB :: HittableType -> AABB
 createAABB (Sphere pos radius _)  = AABB (pos <-> fill radius) (pos <+> fill radius)
 createAABB (BVH node) = _aabb node
 
--- sphere's collision detection
+-- collision detection
+-- improving efficiency here is very important
 hit :: HittableType -> Ray -> Double -> Double -> Maybe HitRecord
 hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax)
                                                   then Nothing
@@ -90,13 +93,14 @@ surroundingAABB (AABB minPos1 maxPos1) (AABB minPos2 maxPos2) = AABB small big
                                                                     big   = zipWith max maxPos1 maxPos2
 
 hitAABB :: AABB -> Ray -> Double -> Double -> Bool
-hitAABB (AABB minPos maxPos) ray tmin tmax = all (>= 0.0) inSlabs
-                                    where invD    = mapCVec3 (_direction ray) (1.0 /)
-                                          tmp0    = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
-                                          tmp1    = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
-                                          t0s     = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
-                                          t1s     = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
-                                          inSlabs = toList $ t1s <-> t0s
+hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
+                                    where invD      = mapCVec3 (_direction ray) (1.0 /)
+                                          tmp0      = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
+                                          tmp1      = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
+                                          t0s       = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
+                                          t1s       = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
+                                          (x, y, z) = toXYZ $ t1s <-> t0s
+                                          inSlabs   = x >= 0.0 && y >= 0.0 && z >= 0.0
 
 -- BVH
 compareObjects :: Int -> HittableType -> HittableType -> Bool
