@@ -14,6 +14,7 @@ import RayTracer.Ray
 import RayTracer.Material
 
 --import Control.Parallel
+import Data.List hiding (zipWith)
 import Prelude hiding (zipWith)
 
 data BVHNode = BVHNode
@@ -54,6 +55,8 @@ createAABB (BVH node) = _aabb node
 
 -- collision detection
 -- improving efficiency here is very important
+{-# INLINE hit #-}
+
 hit :: HittableType -> Ray -> Double -> Double -> Maybe HitRecord
 hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax)
                                                   then Nothing
@@ -76,7 +79,7 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tm
 hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
                                       (Just lhr)  -> case hit right ray tmin (_t lhr) of
-                                                      (Just rhr) -> Just rhr -- either left or right
+                                                      (Just rhr) -> Just rhr 
                                                       Nothing    -> Just lhr
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
@@ -103,24 +106,32 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           inSlabs   = x >= 0.0 && y >= 0.0 && z >= 0.0
 
 -- BVH
-compareObjects :: Int -> HittableType -> HittableType -> Bool
-compareObjects axis ht1 ht2 = case axis of
-                                  0 -> lx < rx
-                                  1 -> ly < ry
-                                  2 -> lz < rz
-                                  _ -> undefined -- !!!!!!!!!!!!!!!!!
-                                  where laabb = createAABB ht1
-                                        raabb = createAABB ht2
-                                        (lx, ly, lz) = toXYZ $ _minPos laabb
-                                        (rx, ry, rz) = toXYZ $ _minPos raabb
+-- compareObjects :: HittableType -> HittableType -> Ord
+-- compareObjects axis ht1 ht2 = case axis of
+--                                   0 -> lx < rx
+--                                   1 -> ly < ry
+--                                   2 -> lz < rz
+--                                   _ -> undefined -- !!!!!!!!!!!!!!!!!
+--                                   where laabb = createAABB ht1
+--                                         raabb = createAABB ht2
+--                                         (lx, ly, lz) = toXYZ $ _minPos laabb
+--                                         (rx, ry, rz) = toXYZ $ _minPos raabb
 
 -- quick sort AABB by specified axis
 sortObjects :: [HittableType] -> Int -> [HittableType]
-sortObjects [] axis     = []
-sortObjects [o] axis    = [o]
-sortObjects (o:xo) axis = sortObjects left axis ++ [o] ++ sortObjects right axis
-                      where left  = filter (compareObjects axis o) xo
-                            right = filter (not . compareObjects axis o) xo
+sortObjects objects axis = let cmp ht1 ht2 = case axis of
+                                              0 -> compare lx rx
+                                              1 -> compare ly ry
+                                              2 -> compare lz rz
+                                              _ -> undefined
+                                              where
+                                                laabb = createAABB ht1
+                                                raabb = createAABB ht2
+                                                (lx, ly, lz) = toXYZ $ _minPos laabb
+                                                (rx, ry, rz) = toXYZ $ _minPos raabb
+                            in sortBy cmp objects
+
+
 
 createBVH :: [HittableType] -> HittableType
 createBVH [object] = BVH $ BVHNode aabb object object
