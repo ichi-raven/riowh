@@ -64,7 +64,8 @@ createRandomSpheres seed = presetSpheres ++ randomSpheres
                                               Sphere (fromXYZ (-4.0,  1.0, 0))  1.0   (Lambertian (fromXYZ (0.4, 0.2, 0.1))),
                                               Sphere (fromXYZ (4.0,   1.0, 0))  1.0   (Metal      (fromXYZ (0.7, 0.6, 0.5)) 0.0)
                                             ]
-                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (-11) 11 (-11) (-11, 11)
+                                randomRange   = (-10, 10)
+                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (fst randomRange) (snd randomRange) (fst randomRange) randomRange
 
 createTestSpheres :: [HittableType]
 createTestSpheres =   [

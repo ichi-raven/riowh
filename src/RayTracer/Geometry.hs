@@ -109,9 +109,9 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
 sortObjects :: [HittableType] -> Int -> [HittableType]
 sortObjects objects axis = sortBy cmp objects
                         where cmp ht1 ht2 = case axis of
-                                              0 -> compare lx rx
-                                              1 -> compare ly ry
-                                              2 -> compare lz rz
+                                              0 -> compare rx lx
+                                              1 -> compare ry ly
+                                              2 -> compare rz lz
                                               _ -> undefined
                                               where
                                                 laabb = createAABB ht1
