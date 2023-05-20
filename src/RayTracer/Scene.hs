@@ -5,14 +5,17 @@ module RayTracer.Scene
     Scene(..),
     buildScene,
     createRandomSpheres,
+    createTestSpheres,
     module RayTracer.Geometry
 ) where
 
+import RayTracer.Color
 import RayTracer.Geometry
 import RayTracer.Material
 import RayTracer.Random
 
 import Prelude hiding (zipWith)
+import Data.List hiding (zipWith)
 
 data Scene = Scene
   {
@@ -20,7 +23,7 @@ data Scene = Scene
     _recursiveDepth :: !Int
   } deriving (Generic, NFData)
 
--- eta reduce
+-- eta reduction
 buildScene :: [HittableType] -> Int -> Scene
 buildScene objects = Scene (createBVH objects)
 
@@ -61,4 +64,14 @@ createRandomSpheres seed = presetSpheres ++ randomSpheres
                                               Sphere (fromXYZ (-4.0,  1.0, 0))  1.0   (Lambertian (fromXYZ (0.4, 0.2, 0.1))),
                                               Sphere (fromXYZ (4.0,   1.0, 0))  1.0   (Metal      (fromXYZ (0.7, 0.6, 0.5)) 0.0)
                                             ]
-                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (-10) 10 (-10) (-10, 10)
+                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (-11) 11 (-11) (-11, 11)
+
+createTestSpheres :: [HittableType]
+createTestSpheres =   [
+                        Sphere (fromXYZ (0,     -100.5, -1.0))  100   (Lambertian kGreen),
+                        Sphere (fromXYZ (0,     0.1,    -2.0))  0.3   (Lambertian kRed),
+                        Sphere (fromXYZ (-1.0,  0,      -1.0))  0.4   (Lambertian kWhite),
+                        Sphere (fromXYZ (1.0,   0,      -1.0))  0.4   (Metal kBlue 0.6),
+                        Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal kWhite 0.07),
+                        Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4) 
+                      ]

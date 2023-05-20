@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
+{-# LANGUAGE BangPatterns, DeriveGeneric, DeriveAnyClass#-}
 
 module RayTracer.Geometry
 (
@@ -71,7 +71,7 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tm
                                                   t1            = (-halfB - sqrtd) / a
                                                   t2            = (-halfB + sqrtd) / a
                                                   t             = closer tmin tmax t1 t2
-                                                  rpos           = ray `at` t
+                                                  rpos          = ray `at` t
                                                   outwardNormal = (rpos <-> position) .^ (1.0 / radius)
                                                   frontFace     = (rdir .* outwardNormal) <= 0
                                                   normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
@@ -102,24 +102,13 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           tmp1      = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
                                           t0s       = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
                                           t1s       = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
-                                          (x, y, z) = toXYZ $ t1s <-> t0s
+                                          (x, y, z) = toXYZ (t1s <-> t0s)
                                           inSlabs   = x >= 0.0 && y >= 0.0 && z >= 0.0
 
--- BVH
--- compareObjects :: HittableType -> HittableType -> Ord
--- compareObjects axis ht1 ht2 = case axis of
---                                   0 -> lx < rx
---                                   1 -> ly < ry
---                                   2 -> lz < rz
---                                   _ -> undefined -- !!!!!!!!!!!!!!!!!
---                                   where laabb = createAABB ht1
---                                         raabb = createAABB ht2
---                                         (lx, ly, lz) = toXYZ $ _minPos laabb
---                                         (rx, ry, rz) = toXYZ $ _minPos raabb
-
--- quick sort AABB by specified axis
+-- -- sort AABB by specified axis
 sortObjects :: [HittableType] -> Int -> [HittableType]
-sortObjects objects axis = let cmp ht1 ht2 = case axis of
+sortObjects objects axis = sortBy cmp objects
+                        where cmp ht1 ht2 = case axis of
                                               0 -> compare lx rx
                                               1 -> compare ly ry
                                               2 -> compare lz rz
@@ -129,9 +118,6 @@ sortObjects objects axis = let cmp ht1 ht2 = case axis of
                                                 raabb = createAABB ht2
                                                 (lx, ly, lz) = toXYZ $ _minPos laabb
                                                 (rx, ry, rz) = toXYZ $ _minPos raabb
-                            in sortBy cmp objects
-
-
 
 createBVH :: [HittableType] -> HittableType
 createBVH [object] = BVH $ BVHNode aabb object object

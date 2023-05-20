@@ -19,23 +19,30 @@ main = do
     -- parameter
     let width           = 640
         height          = 480
-        spp             = 200
+        spp             = 30
         recursiveDepth  = 25
-        outputFileName  = "output.ppm"
+        outputFileName  = "output111.ppm"
 
     -- camera
-    let lookAt      = origin
-        lookFrom    = fromXYZ (13.0, 2.0, 3.0)
+    -- let lookAt      = origin
+    --     lookFrom    = fromXYZ (13.0, 2.0, 3.0)
+    --     up          = fromXYZ (0, 1.0, 0)
+    --     vfov        = 20
+    --     distToFocus = 10.0
+    --     aperture    = 0.08
+    let lookAt      = fromXYZ (0, 0, -2.0)
+        lookFrom    = origin
         up          = fromXYZ (0, 1.0, 0)
-        vfov        = 20
-        distToFocus = 10.0
-        aperture    = 0.08
+        vfov        = 90
+        distToFocus = norm $ lookFrom <-> lookAt 
+        aperture    = 0
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)
     let seed    = 42
-        spheres = createRandomSpheres seed
-    
+        spheres = --createRandomSpheres seed
+                  createTestSpheres
+
     -- build scene data
     let scene = buildScene spheres recursiveDepth
 
