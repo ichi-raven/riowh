@@ -17,31 +17,31 @@ main = do
     startTime <- getCurrentTime
 
     -- parameter
-    let width           = 640
-        height          = 480
-        spp             = 30
-        recursiveDepth  = 25
-        outputFileName  = "output111.ppm"
+    let width           = 1920
+        height          = 1080
+        spp             = 512
+        recursiveDepth  = 10
+        outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 
     -- camera
-    -- let lookAt      = origin
-    --     lookFrom    = fromXYZ (13.0, 2.0, 3.0)
-    --     up          = fromXYZ (0, 1.0, 0)
-    --     vfov        = 20
-    --     distToFocus = 10.0
-    --     aperture    = 0.08
-    let lookAt      = fromXYZ (0, 0, -2.0)
-        lookFrom    = origin
+    let lookAt      = origin
+        lookFrom    = fromXYZ (13.0, 2.0, 3.0)
         up          = fromXYZ (0, 1.0, 0)
-        vfov        = 90
-        distToFocus = norm $ lookFrom <-> lookAt 
-        aperture    = 0
+        vfov        = 20
+        distToFocus = 10.0
+        aperture    = 0.08
+    -- let lookAt      = fromXYZ (0, 0, -2.0)
+    --     lookFrom    = origin
+    --     up          = fromXYZ (0, 1.0, 0)
+    --     vfov        = 90
+    --     distToFocus = norm $ lookFrom <-> lookAt 
+    --     aperture    = 0
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)
-    let seed    = 42
-        spheres = --createRandomSpheres seed
-                  createTestSpheres
+    let seed    = 0xdeadbeef
+        spheres = createRandomSpheres seed
+                  --createTestSpheres
 
     -- build scene data
     let scene = buildScene spheres recursiveDepth
@@ -62,3 +62,4 @@ main = do
     endTime <- getCurrentTime
 
     putStrLn $ "finished (elapsed time : " ++ show (diffUTCTime endTime startTime) ++ ")"
+    putStrLn $ "saved result image to " ++ outputFileName

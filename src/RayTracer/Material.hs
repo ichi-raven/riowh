@@ -65,7 +65,7 @@ scatter (Dielectric refIdx) ray hr gen = do
                                   reflected     = Ray point $ normalize (reflect unitDir normal)
                                   refracted     = Ray point $ normalize (refract unitDir normal etaiOverEtat)
                                   reflectProb   = schlick cosTheta etaiOverEtat
-                              --r <- uniformRM (0.0, 1.0) gen
-                              if etaiOverEtat * sinTheta > 1.0 -- || r < reflectProb
+                              r <- uniformRM (0.0, 1.0) gen
+                              if etaiOverEtat * sinTheta > 1.0 || r < reflectProb
                                   then return $ Just (ScatterResult attenuation reflected)
                                   else return $ Just (ScatterResult attenuation refracted)

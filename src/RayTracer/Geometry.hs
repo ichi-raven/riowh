@@ -79,7 +79,7 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tm
 hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
                                       (Just lhr)  -> case hit right ray tmin (_t lhr) of
-                                                      (Just rhr) -> Just rhr 
+                                                      (Just rhr) -> if (_t lhr) < (_t rhr) then Just lhr else Just rhr 
                                                       Nothing    -> Just lhr
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
@@ -109,15 +109,21 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
 sortObjects :: [HittableType] -> Int -> [HittableType]
 sortObjects objects axis = sortBy cmp objects
                         where cmp ht1 ht2 = case axis of
-                                              0 -> compare rx lx
-                                              1 -> compare ry ly
-                                              2 -> compare rz lz
+                                              0 -> compare lx rx
+                                              1 -> compare ly ry
+                                              2 -> compare lz rz
                                               _ -> undefined
                                               where
                                                 laabb = createAABB ht1
                                                 raabb = createAABB ht2
                                                 (lx, ly, lz) = toXYZ $ _minPos laabb
                                                 (rx, ry, rz) = toXYZ $ _minPos raabb
+
+splitAt' :: Int -> [a] -> ([a], [a])
+splitAt' n xs | n <= 0 = ([], xs)
+splitAt' _ []          = ([], [])
+splitAt' n (x:xs)      = (x:ys, zs)
+    where (ys, zs) = splitAt' (n - 1) xs
 
 createBVH :: [HittableType] -> HittableType
 createBVH [object] = BVH $ BVHNode aabb object object
@@ -129,7 +135,7 @@ createBVH objects = BVH $ BVHNode (surroundingAABB laabb raabb) leftNode rightNo
                 where axis    = length objects `mod` 3 -- random
                       sorted  = sortObjects objects axis
                       mid     = length sorted `div` 2
-                      (leftObjects, rightObjects) = splitAt mid sorted
+                      (leftObjects, rightObjects) = splitAt' mid sorted
                       leftNode  = createBVH leftObjects
                       rightNode = createBVH rightObjects
                       laabb = _aabb $ _node leftNode
