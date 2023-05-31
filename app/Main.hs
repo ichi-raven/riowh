@@ -17,9 +17,9 @@ main = do
     startTime <- getCurrentTime
 
     -- parameter
-    let width           = 1920
-        height          = 1080
-        spp             = 512
+    let width           = 640
+        height          = 480
+        spp             = 10
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 

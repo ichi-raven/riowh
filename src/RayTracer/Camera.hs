@@ -49,3 +49,4 @@ getRay u v camera gen = do
                             yv          = fromXYZ (0, y, 0)
                             offset      = (xv .^ u) <+> (yv .^ v)
                         return $ Ray (orig <+> offset) (normalize (llc <+> (horizontal .^ u) <+> (vertical .^ v) <-> orig <-> offset))
+                        

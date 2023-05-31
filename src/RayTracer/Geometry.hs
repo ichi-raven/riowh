@@ -54,18 +54,20 @@ createAABB (Sphere pos radius _)  = AABB (pos <-> fill radius) (pos <+> fill rad
 createAABB (BVH node) = _aabb node
 
 -- collision detection
--- improving efficiency here is very important
+-- improving efficiency of here is very important
 {-# INLINE hit #-}
 
 hit :: HittableType -> Ray -> Double -> Double -> Maybe HitRecord
-hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax)
+hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax))
                                                   then Nothing
                                                   else Just $ HitRecord rpos normal t frontFace mat
                                             where oc            = _origin ray <-> position
                                                   rdir          = _direction ray
-                                                  a             = norm rdir ** 2
+                                                  nrdir         = norm rdir 
+                                                  a             = nrdir * nrdir
                                                   halfB         = oc .* rdir
-                                                  c             = norm oc ** 2 - radius ** 2
+                                                  noc           = norm oc
+                                                  c             = noc * noc - radius * radius
                                                   discriminant  = halfB * halfB - a * c
                                                   sqrtd         = sqrt discriminant
                                                   t1            = (-halfB - sqrtd) / a

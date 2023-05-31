@@ -49,9 +49,9 @@ sample scene camera x y gen = do
 -- rendering one pixel by sampling "spp" times
 renderPixel :: Scene -> Camera -> Int -> Int -> Color
 renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegral spp)
-                  where width    = _width camera
-                        height   = _height camera
-                        spp      = _spp camera
+                  where width    = _width   camera
+                        height   = _height  camera
+                        spp      = _spp     camera
                         pixelIdx = x * height + y
                         -- NO parallelization (too much SPARKs)
                         sampledColors = [runStateGen_ (mkStdGen (pixelIdx + (sppIdx * width * height))) (sample scene camera x y) | sppIdx <- [0..spp]]
