@@ -77,7 +77,5 @@ executable rayTracer
     ghc-options: -O3
                  -rtsopts -threaded
                  -j12
-                --  -fllvm -optlo-O3 -optl-ffast-math
-                --  -fexcess-precision -funfolding-use-threshold1000
                  "-with-rtsopts=-N16"
     --ghc-options: -O2 -threaded -fprof-auto -eventlog -j12 "-with-rtsopts=-N -p -s -hc -lf -i0.1"

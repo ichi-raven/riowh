@@ -6,10 +6,10 @@ module Main where
 import RayTracer.Scene
 import RayTracer.Output
 import RayTracer.Camera
-import Data.Time
-
-import GHC.Conc (numCapabilities)
 import RayTracer.Renderer
+
+import Data.Time
+import GHC.Conc (numCapabilities)
 
 main :: IO ()
 main = do
@@ -17,8 +17,8 @@ main = do
     startTime <- getCurrentTime
 
     -- parameter
-    let width           = 640
-        height          = 480
+    let width           = 1920
+        height          = 1080
         spp             = 10
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
@@ -39,7 +39,7 @@ main = do
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)
-    let seed    = 0xdeadbeef
+    let seed    = 0
         spheres = createRandomSpheres seed
                   --createTestSpheres
 
@@ -52,11 +52,8 @@ main = do
     putStrLn $ "start rendering... (Running in " ++  if nc > 1 then show nc ++ " threads parallel)" else "serial)"
     putStrLn $ "sphere num in scene : " ++ show (length spheres)
 
-    -- rendering
-    let image = render scene camera
-
-    -- output
-    outputImageByPPM outputFileName image
+    -- render and output
+    outputImageByPPM outputFileName $ render scene camera
 
     -- exec time measurement (end)
     endTime <- getCurrentTime

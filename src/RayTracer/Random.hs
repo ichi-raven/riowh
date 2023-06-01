@@ -15,13 +15,15 @@ randomColor gen = do
                   b <- uniformRM (0.0, 1.0) gen
                   return $ fromXYZ (r, g, b)
 
+--{-# INLINE randomUnitVector #-}
 randomUnitVector :: StatefulGen genType m => genType -> m Point
 randomUnitVector gen = do
                       a     <- uniformRM (0.0,  2.0 * kPi) gen
                       z     <- uniformRM (-1.0, 1.0)       gen
-                      let r = sqrt (1 - z ** 2)
+                      let r = sqrt (1 - z * z)
                       return $ fromXYZ (r * cos a, r * sin a, z)
 
+--{-# INLINE randomInUnitSphere #-}
 randomInUnitSphere :: StatefulGen genType m => genType -> m Point
 randomInUnitSphere gen = do
                           r     <- uniformRM (0, 1.0)                 gen
@@ -35,11 +37,13 @@ randomInUnitSphere gen = do
 --                       let rv = fromXYZ(rx, ry, rz)
 --                       if norm rv >= 1 then (randomInUnitSphere gen) else return rv
 
+--{-# INLINE randomInUnitHemisphere #-}
 randomInUnitHemisphere :: StatefulGen genType m => genType -> Direction -> m Point
 randomInUnitHemisphere gen normal = do
                               inUnitSphere <- randomInUnitSphere gen
                               return $ if inUnitSphere .* normal > 0 then inUnitSphere else inUnitSphere .^ (-1.0)
 
+--{-# INLINE randomInUnitDisk #-}
 randomInUnitDisk :: StatefulGen genType m => genType -> m Point
 randomInUnitDisk gen = do
                         r     <- uniformRM (0, 1.0)       gen

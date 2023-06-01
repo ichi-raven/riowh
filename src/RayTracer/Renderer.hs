@@ -19,7 +19,7 @@ import Prelude hiding (zipWith)
 -- throw ray to the scene recursively
 traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -> Scene -> m Color
 traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tmax of
-                                          Just hr | depth <= 0  ->  return kGreen
+                                          Just hr | depth <= 0  ->  return kBlack
                                                   | otherwise   ->  do
                                                                     msr <- scatter (_surfaceMat hr) ray hr gen
                                                                     case msr of
@@ -56,7 +56,8 @@ renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegra
                         -- NO parallelization (too much SPARKs)
                         sampledColors = [runStateGen_ (mkStdGen (pixelIdx + (sppIdx * width * height))) (sample scene camera x y) | sppIdx <- [0..spp]]
 
--- rendering (split tasks according to the number of runtime threads)
+-- rendering (split tasks parallel according to the number of runtime threads)
+{-# INLINE render #-}
 render :: Scene -> Camera -> Image
 render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parListChunk splitNum rdeepseq [((x, y), renderPixel scene camera x y) | x <- [0..width - 1], y <- [0..height - 1]]
                                  where width      = _width  camera

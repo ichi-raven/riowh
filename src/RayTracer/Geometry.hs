@@ -99,13 +99,14 @@ surroundingAABB (AABB minPos1 maxPos1) (AABB minPos2 maxPos2) = AABB small big
 
 hitAABB :: AABB -> Ray -> Double -> Double -> Bool
 hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
-                                    where invD      = mapCVec3 (_direction ray) (1.0 /)
-                                          tmp0      = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
-                                          tmp1      = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
-                                          t0s       = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
-                                          t1s       = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
-                                          (x, y, z) = toXYZ (t1s <-> t0s)
-                                          inSlabs   = x >= 0.0 && y >= 0.0 && z >= 0.0
+                                    where (dx, dy, dz)  = toXYZ(_direction ray)
+                                          invD          = fromXYZ(1.0 / dx, 1.0 / dy, 1.0 / dz)
+                                          tmp0          = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
+                                          tmp1          = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
+                                          t0s           = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
+                                          t1s           = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
+                                          (x, y, z)     = toXYZ (t1s <-> t0s)
+                                          inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
 
 -- -- sort AABB by specified axis
 sortObjects :: [HittableType] -> Int -> [HittableType]
