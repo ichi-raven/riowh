@@ -19,7 +19,7 @@ main = do
     -- parameter
     let width           = 1920
         height          = 1080
-        spp             = 10
+        spp             = 1024
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 
@@ -29,13 +29,13 @@ main = do
         up          = fromXYZ (0, 1.0, 0)
         vfov        = 20
         distToFocus = 10.0
-        aperture    = 0.08
+        aperture    = 0.07
     -- let lookAt      = fromXYZ (0, 0, -2.0)
     --     lookFrom    = origin
     --     up          = fromXYZ (0, 1.0, 0)
     --     vfov        = 90
     --     distToFocus = norm $ lookFrom <-> lookAt 
-    --     aperture    = 0
+    --     aperture    = 0.05
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)

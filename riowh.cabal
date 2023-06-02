@@ -32,6 +32,7 @@ library
                       RayTracer.Ray
                       RayTracer.Renderer
                       RayTracer.Scene
+                      RayTracer.Texture
                       RayTracer.Utility
 
     -- Modules included in this library but not exported.
@@ -76,6 +77,6 @@ executable rayTracer
     default-extensions:  Strict StrictData
     ghc-options: -O3
                  -rtsopts -threaded
-                 -j12
-                 "-with-rtsopts=-N16"
+                 -j4
+                 "-with-rtsopts=-N8"
     --ghc-options: -O2 -threaded -fprof-auto -eventlog -j12 "-with-rtsopts=-N -p -s -hc -lf -i0.1"

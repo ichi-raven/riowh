@@ -5,14 +5,15 @@ module RayTracer.Material where
 import RayTracer.Utility
 import RayTracer.Ray
 import RayTracer.Random
+import RayTracer.Texture
 
 data MaterialType = Lambertian
                 {
-                  _albedo :: !Color
+                  _albedo :: !TextureType
                 }
                 | Metal
                 {
-                  _albedo  :: !Color,
+                  _albedo  :: !TextureType,
                   _fuzz    :: !Double
                 }
                 | Dielectric
@@ -32,19 +33,21 @@ data HitRecord = HitRecord
     _point        :: !Point,
     _normal       :: !Direction,
     _t            :: !Double,
+    _u            :: !Double,
+    _v            :: !Double,
     _frontFace    :: !Bool,
     _surfaceMat   :: !MaterialType
   } deriving (Generic, NFData)
 
 {-# INLINE scatter #-}
-
 scatter :: StatefulGen genType m => MaterialType -> Ray -> HitRecord -> genType -> m (Maybe ScatterResult)
 scatter (Lambertian albedo) ray hr gen = do
-                                  v <- randomUnitVector gen
+                                  rv <- randomUnitVector gen
                                   let point     = _point hr
                                       normal    = _normal hr
-                                      direction = normalize $ normal <+> v
-                                  return $ Just $ ScatterResult albedo (Ray point direction)
+                                      direction = normalize $ normal <+> rv
+                                      sampled   = value albedo (_u hr) (_v hr) point
+                                  return $ Just $ ScatterResult sampled (Ray point direction)
 
 scatter (Metal albedo fuzz) ray hr gen = do
                                   v <- randomInUnitSphere gen
@@ -52,8 +55,9 @@ scatter (Metal albedo fuzz) ray hr gen = do
                                         normal    = _normal hr
                                         reflected = reflect (normalize (_direction ray)) normal
                                         scattered = Ray point $ normalize (reflected <+> (v .^ fuzz))
+                                        sampled   = value albedo (_u hr) (_v hr) point
                                   return $ if (reflected .* normal) > 0
-                                            then Just (ScatterResult albedo scattered)
+                                            then Just (ScatterResult sampled scattered)
                                             else Nothing
 
 scatter (Dielectric refIdx) ray hr gen = do

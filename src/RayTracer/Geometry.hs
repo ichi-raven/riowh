@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, DeriveGeneric, DeriveAnyClass#-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
 
 module RayTracer.Geometry
 (
@@ -48,19 +48,27 @@ closer tmin tmax t1 t2 = if tmin < t1 && tmax > t1
                             then (if tmin < t2 && tmax > t2 then min t1 t2 else t1)
                             else t2
 
+{-# INLINE getSphereUV #-}
+getSphereUV :: Point -> (Double, Double)
+getSphereUV pos = (u, v)
+                where (x, y, z) = toXYZ pos
+                      phi       = atan2 z x
+                      theta     = asin y
+                      u         = 1.0 - (phi + kPi) / (2.0 * kPi)
+                      v         = (theta + kPi / 2.0) / kPi
+
 -- create sphere's axis-aligned bounding box
 createAABB :: HittableType -> AABB
 createAABB (Sphere pos radius _)  = AABB (pos <-> fill radius) (pos <+> fill radius)
 createAABB (BVH node) = _aabb node
 
 -- collision detection
--- improving efficiency of here is very important
+-- improving efficiency here is very important
 {-# INLINE hit #-}
-
 hit :: HittableType -> Ray -> Double -> Double -> Maybe HitRecord
-hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax))
+hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax)
                                                   then Nothing
-                                                  else Just $ HitRecord rpos normal t frontFace mat
+                                                  else Just $ HitRecord rpos normal t u v frontFace mat
                                             where oc            = _origin ray <-> position
                                                   rdir          = _direction ray
                                                   nrdir         = norm rdir 
@@ -77,6 +85,7 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < t
                                                   outwardNormal = (rpos <-> position) .^ (1.0 / radius)
                                                   frontFace     = (rdir .* outwardNormal) <= 0
                                                   normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
+                                                  (u, v)        = getSphereUV outwardNormal
 
 hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
@@ -90,13 +99,13 @@ hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                     right = _right node
 
 -- AABB
-
 -- create surrounding two bounding box
 surroundingAABB :: AABB -> AABB -> AABB
 surroundingAABB (AABB minPos1 maxPos1) (AABB minPos2 maxPos2) = AABB small big
                                                               where small = zipWith min minPos1 minPos2
                                                                     big   = zipWith max maxPos1 maxPos2
 
+-- check hit in AABB 
 hitAABB :: AABB -> Ray -> Double -> Double -> Bool
 hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                     where (dx, dy, dz)  = toXYZ(_direction ray)
@@ -107,6 +116,8 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           t1s           = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
                                           (x, y, z)     = toXYZ (t1s <-> t0s)
                                           inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
+
+-- BVH
 
 -- -- sort AABB by specified axis
 sortObjects :: [HittableType] -> Int -> [HittableType]
