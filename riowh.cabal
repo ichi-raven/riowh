@@ -75,8 +75,8 @@ executable rayTracer
     hs-source-dirs:   app
     default-language: Haskell2010
     default-extensions:  Strict StrictData
-    ghc-options: -O3
-                 -rtsopts -threaded
-                 -j4
-                 "-with-rtsopts=-N8"
-    --ghc-options: -O2 -threaded -fprof-auto -eventlog -j12 "-with-rtsopts=-N -p -s -hc -lf -i0.1"
+    -- ghc-options: -O2
+    --              -rtsopts -threaded
+    --              -j4
+    --              "-with-rtsopts=-N8"
+    ghc-options: -O2 -threaded -fprof-auto -eventlog -j4 "-with-rtsopts=-N -p -s -hc -lf -i0.1"

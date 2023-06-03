@@ -132,7 +132,6 @@ sortObjects objects axis = sortBy cmp objects
                                                 raabb = createAABB ht2
                                                 (lx, ly, lz) = toXYZ $ _minPos laabb
                                                 (rx, ry, rz) = toXYZ $ _minPos raabb
-
 splitAt' :: Int -> [a] -> ([a], [a])
 splitAt' n xs | n <= 0 = ([], xs)
 splitAt' _ []          = ([], [])

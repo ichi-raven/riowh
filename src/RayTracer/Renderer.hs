@@ -17,6 +17,7 @@ import GHC.Conc (numCapabilities)
 import Prelude hiding (zipWith)
 
 -- throw ray to the scene recursively
+{-# INLINE traceRay #-}
 traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -> Scene -> m Color
 traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tmax of
                                           Just hr | depth <= 0  ->  return kBlack
@@ -34,6 +35,7 @@ traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tm
                                                           t         = 0.5 * (y  + 1.0)
 
 -- sampling one time by random ray
+{-# INLINE sample #-}
 sample :: StatefulGen genType m => Scene -> Camera -> Int -> Int -> genType -> m Color
 sample scene camera x y gen = do
                               rx    <- uniformRM (-0.5, 0.5) gen
@@ -46,15 +48,22 @@ sample scene camera x y gen = do
                               ray <- getRay (1.0 - v) u camera gen
                               traceRay ray 0 kInfinity recursiveDepth gen scene
 
+{-# INLINE iterateStatefulGen #-}
+iterateStatefulGen :: RandomGen genType => Scene -> Camera -> Int -> Int -> (Color, genType) -> [Color]
+iterateStatefulGen scene camera x y (e, gen) = e : iterateStatefulGen scene camera x y (runStateGen gen (sample scene camera x y))
+
 -- rendering one pixel by sampling "spp" times
+{-# INLINE renderPixel #-}
 renderPixel :: Scene -> Camera -> Int -> Int -> Color
 renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegral spp)
                   where width    = _width   camera
                         height   = _height  camera
                         spp      = _spp     camera
                         pixelIdx = x * height + y
+                        gen      = mkStdGen pixelIdx
                         -- NO parallelization (too much SPARKs)
-                        sampledColors = [runStateGen_ (mkStdGen (pixelIdx + (sppIdx * width * height))) (sample scene camera x y) | sppIdx <- [0..spp]]
+                        --sampledColors = [runStateGen_ (mkStdGen (pixelIdx + (sppIdx * width * height))) (sample scene camera x y) | sppIdx <- [0..spp]]
+                        sampledColors = take spp $ iterateStatefulGen scene camera x y (kBlack, gen)
 
 -- rendering (split tasks parallel according to the number of runtime threads)
 {-# INLINE render #-}

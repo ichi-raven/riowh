@@ -24,6 +24,7 @@ type Color      = CVec3
 type Point      = CVec3
 type Direction  = CVec3
 type Image      = Array(Int, Int) Color
+--type Image      = UArray(Int, Int) Color 
 
 -- constant
 kInfinity :: Double
@@ -73,7 +74,8 @@ refract :: Direction -> Direction -> Double -> Direction
 refract uv n etaiOverEtat = rOutParallel <+> rOutPerp
                             where cosTheta      = (uv .^ (-1.0)) .* n
                                   rOutParallel  = (uv <+> (n .^ cosTheta)) .^ etaiOverEtat
-                                  rOutPerp      = n .^ ((-1.0) * sqrt (1.0 - (norm rOutParallel) ** 2))
+                                  nrOut         = (norm rOutParallel)
+                                  rOutPerp      = n .^ ((-1.0) * sqrt (1.0 - nrOut * nrOut))
 
 {-# INLINE schlick #-}
 -- schlick's approximation
