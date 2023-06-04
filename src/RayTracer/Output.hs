@@ -19,9 +19,9 @@ ppmHeader :: Int -> Int -> Text
 ppmHeader width height = T.pack $ "P3\n" ++ show width ++ " " ++ show height ++ "\n255\n"
 
 -- translate pixel color to ppm pixel string("R G B")
-showColor :: Color -> Text
-showColor color = T.pack $ show (floor (255.999 * r)) ++ " " ++ show (floor (255.999 * g)) ++ " " ++ show (floor (255.999 * b))
-                  where (r, g, b) = toXYZ $ toneMapping $ clampColor color
+showColor :: Word32 -> Text
+showColor colorBytes = T.pack $ show r ++ " " ++ show g ++ " " ++ show b
+                  where (r, g, b, _) = unpackR8G8B8A8 colorBytes
 
 -- translate output image to ppm format
 ppmFormat :: Image -> Text

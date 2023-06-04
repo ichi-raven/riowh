@@ -15,6 +15,6 @@ data Ray = Ray
     _direction  :: !Direction
   } deriving (Generic, NFData)
 
-{-# INLINE at #-}
+--{-# INLINE at #-}
 at :: Ray -> Double -> Point
 at ray t = _origin ray <+> (_direction ray .^ t)

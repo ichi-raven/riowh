@@ -17,13 +17,6 @@ import RayTracer.Material
 import Data.List hiding (zipWith)
 import Prelude hiding (zipWith)
 
-data BVHNode = BVHNode
-  {
-    _aabb   :: !AABB,
-    _left   :: !HittableType,
-    _right  :: !HittableType
-  } deriving (Generic, NFData)
-
 data HittableType =
   Sphere
   {
@@ -33,7 +26,9 @@ data HittableType =
   }
   | BVH
   {
-    _node :: !BVHNode
+    _aabb   :: !AABB,
+    _left   :: !HittableType,
+    _right  :: !HittableType
   } deriving (Generic, NFData)
 
 data AABB = AABB
@@ -43,6 +38,7 @@ data AABB = AABB
   } deriving (Generic, NFData)
 
 -- return the closer t under the assumption that one of t1 and t2 is always inside [tmin, tmax]
+{-# INLINE closer #-}
 closer :: Double -> Double -> Double -> Double -> Double
 closer tmin tmax t1 t2 = if tmin < t1 && tmax > t1
                             then (if tmin < t2 && tmax > t2 then min t1 t2 else t1)
@@ -60,18 +56,18 @@ getSphereUV pos = (u, v)
 -- create sphere's axis-aligned bounding box
 createAABB :: HittableType -> AABB
 createAABB (Sphere pos radius _)  = AABB (pos <-> fill radius) (pos <+> fill radius)
-createAABB (BVH node) = _aabb node
+createAABB (BVH aabb _ _)         = aabb
 
 -- collision detection
 -- improving efficiency here is very important
-{-# INLINE hit #-}
+--{-# INLINE hit #-}
 hit :: HittableType -> Ray -> Double -> Double -> Maybe HitRecord
-hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax)
+hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < tmin || t1 > tmax) && (t2 < tmin || t2 > tmax))
                                                   then Nothing
                                                   else Just $ HitRecord rpos normal t u v frontFace mat
                                             where oc            = _origin ray <-> position
                                                   rdir          = _direction ray
-                                                  nrdir         = norm rdir 
+                                                  nrdir         = norm rdir
                                                   a             = nrdir * nrdir
                                                   halfB         = oc .* rdir
                                                   noc           = norm oc
@@ -81,45 +77,65 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || (t1 < tm
                                                   t1            = (-halfB - sqrtd) / a
                                                   t2            = (-halfB + sqrtd) / a
                                                   t             = closer tmin tmax t1 t2
-                                                  rpos          = ray `at` t
+                                                  rpos          = at ray t
                                                   outwardNormal = (rpos <-> position) .^ (1.0 / radius)
                                                   frontFace     = (rdir .* outwardNormal) <= 0
                                                   normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
                                                   (u, v)        = getSphereUV outwardNormal
 
-hit (BVH node) ray tmin tmax = if hitAABB aabb ray tmin tmax
+hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
                                       (Just lhr)  -> case hit right ray tmin (_t lhr) of
-                                                      (Just rhr) -> if (_t lhr) < (_t rhr) then Just lhr else Just rhr 
+                                                      (Just rhr) -> if _t lhr < _t rhr then Just lhr else Just rhr
                                                       Nothing    -> Just lhr
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
-                              where aabb  = _aabb  node
-                                    left  = _left  node
-                                    right = _right node
+                              -- where aabb  = _aabb  node
+                              --       left  = _left  node
+                              --       right = _right node
 
 -- AABB
--- create surrounding two bounding box
+-- create AABB surrounding two AABB
 surroundingAABB :: AABB -> AABB -> AABB
 surroundingAABB (AABB minPos1 maxPos1) (AABB minPos2 maxPos2) = AABB small big
                                                               where small = zipWith min minPos1 minPos2
                                                                     big   = zipWith max maxPos1 maxPos2
 
--- check hit in AABB 
+-- check hit in AABB
 hitAABB :: AABB -> Ray -> Double -> Double -> Bool
 hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
-                                    where (dx, dy, dz)  = toXYZ(_direction ray)
-                                          invD          = fromXYZ(1.0 / dx, 1.0 / dy, 1.0 / dz)
-                                          tmp0          = zipWith (*) invD $ zipWith (-) minPos (_origin ray)
-                                          tmp1          = zipWith (*) invD $ zipWith (-) maxPos (_origin ray)
-                                          t0s           = zipWith max (fill tmin) $ zipWith min tmp0 tmp1
-                                          t1s           = zipWith min (fill tmax) $ zipWith max tmp0 tmp1
+                                    where (dx, dy, dz)  = toXYZ (_direction ray)
+                                          invD          = fromXYZ (1.0 / dx, 1.0 / dy, 1.0 / dz)
+                                          orig          = _origin ray
+                                          tmp0          = zipWith (*) invD $ zipWith (-) minPos orig
+                                          tmp1          = zipWith (*) invD $ zipWith (-) maxPos orig
+                                          ftmins        = fromXYZ (tmin, tmin, tmin)
+                                          ftmaxs        = fromXYZ (tmax, tmax, tmax)
+                                          t0s           = zipWith max ftmins $ zipWith min tmp0 tmp1
+                                          t1s           = zipWith min ftmaxs $ zipWith max tmp0 tmp1
                                           (x, y, z)     = toXYZ (t1s <-> t0s)
                                           inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
 
--- BVH
+-- experimental
+hitAABB' :: AABB -> Ray -> Double -> Double -> Bool
+hitAABB' (AABB minPos maxPos) ray tmin tmax = inSlabs
+                                    where (dx, dy, dz)  = toXYZ (_direction ray)
+                                          (ox, oy, oz)  = toXYZ $ _origin ray
+                                          (ix, iy, iz)  = toXYZ minPos
+                                          (ax, ay, az)  = toXYZ maxPos
+                                          (t0x, t0y, t0z) = ((ix - ox) / dx, (iy - oy) / dy, (iz - oz) / dz)
+                                          (t1x, t1y, t1z) = ((ax - ox) / dx, (ay - oy) / dy, (az - oz) / dz)
+                                          inSlabs = check tmin tmax dx t0x t1x && check tmin tmax dy t0y t1y && check tmin tmax dz t0z t1z
 
--- -- sort AABB by specified axis
+{-# INLINE check #-}
+check :: Double -> Double -> Double -> Double -> Double -> Bool
+check tmin tmax invD t0 t1 = ntmax > ntmin
+                          where (nt0, nt1) = if invD < 0.0 then (t1, t0) else (t0, t1)
+                                ntmin      = max nt0 tmin
+                                ntmax      = min nt1 tmax
+
+-- BVH
+-- sort AABB by specified axis
 sortObjects :: [HittableType] -> Int -> [HittableType]
 sortObjects objects axis = sortBy cmp objects
                         where cmp ht1 ht2 = case axis of
@@ -132,6 +148,8 @@ sortObjects objects axis = sortBy cmp objects
                                                 raabb = createAABB ht2
                                                 (lx, ly, lz) = toXYZ $ _minPos laabb
                                                 (rx, ry, rz) = toXYZ $ _minPos raabb
+
+-- リストの走査が1回で済むので多分こっちの方が速い
 splitAt' :: Int -> [a] -> ([a], [a])
 splitAt' n xs | n <= 0 = ([], xs)
 splitAt' _ []          = ([], [])
@@ -139,17 +157,17 @@ splitAt' n (x:xs)      = (x:ys, zs)
     where (ys, zs) = splitAt' (n - 1) xs
 
 createBVH :: [HittableType] -> HittableType
-createBVH [object] = BVH $ BVHNode aabb object object
+createBVH [object] = BVH aabb object object
                   where aabb = createAABB object
-createBVH [object1, object2] = BVH $ BVHNode (surroundingAABB laabb raabb) object1 object2
+createBVH [object1, object2] = BVH (surroundingAABB laabb raabb) object1 object2
                             where laabb = createAABB object1
                                   raabb = createAABB object2
-createBVH objects = BVH $ BVHNode (surroundingAABB laabb raabb) leftNode rightNode
+createBVH objects = BVH (surroundingAABB laabb raabb) leftNode rightNode
                 where axis    = length objects `mod` 3 -- random
                       sorted  = sortObjects objects axis
                       mid     = length sorted `div` 2
                       (leftObjects, rightObjects) = splitAt' mid sorted
                       leftNode  = createBVH leftObjects
                       rightNode = createBVH rightObjects
-                      laabb = _aabb $ _node leftNode
-                      raabb = _aabb $ _node rightNode
+                      laabb = _aabb leftNode
+                      raabb = _aabb rightNode

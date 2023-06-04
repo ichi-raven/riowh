@@ -39,7 +39,7 @@ createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camer
                 lensRadius      = 0.5 * aperture
 
 -- return the ray corresponding to viewport's uv coord
-{-# INLINE getRay #-}
+--{-# INLINE getRay #-}
 getRay :: StatefulGen genType m => Double -> Double -> Camera -> genType -> m Ray
 getRay s t camera gen = do
                         rdu <- randomInUnitDisk gen

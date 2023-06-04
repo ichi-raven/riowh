@@ -18,11 +18,31 @@ kWhite :: Color
 kWhite = fromXYZ (0.9, 0.9, 0.9)
 
 -- clamp pixel rgb values to [0, 1)
+--{-# INLINE clampColor #-}
 clampColor :: Color -> Color
 clampColor src = fromXYZ (max (min 0.99999 r) 0.0, max (min 0.99999 g) 0.0, max (min 0.99999 b) 0.0)
                   where (r, g, b) = toXYZ src
 
 -- tone mapping (gamma correction)
+--{-# INLINE toneMapping #-}
 toneMapping :: Color -> Color
 toneMapping src = fromXYZ (sqrt r, sqrt g, sqrt b)
                   where (r, g, b) = toXYZ src
+
+--{-# INLINE packR8G8B8A8 #-}
+packR8G8B8A8 :: Color -> Word32
+packR8G8B8A8 color = shiftL ur 24 .|. shiftL ug 16 .|. shiftL ub 8
+                  where (r, g, b)       = toXYZ color
+                        (ur, ug, ub)    = (floor (255.999 * r) :: Word32, floor (255.999 * g) :: Word32, floor (255.999 * b) :: Word32)
+
+--{-# INLINE unpackR8G8B8A8 #-}
+unpackR8G8B8A8 :: Word32 -> (Word32, Word32, Word32, Word32)
+unpackR8G8B8A8 bytes = (r, g, b, a)
+                    where r = shiftR (bytes .&. 0xFF000000) 24  
+                          g = shiftR (bytes .&. 0x00FF0000) 16  
+                          b = shiftR (bytes .&. 0x0000FF00) 8   
+                          a =         bytes .&. 0x000000FF              
+
+--{-# INLINE postProduction #-}
+postProduction :: Color -> Word32
+postProduction = packR8G8B8A8 . toneMapping . clampColor

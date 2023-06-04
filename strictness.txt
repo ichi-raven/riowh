@@ -1,0 +1,385 @@
+[ 1 of 11] Compiling RayTracer.Utility ( src\RayTracer\Utility.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Utility.o )
+
+==================== Strictness signatures ====================
+RayTracer.Utility.$fGenericCVec3:
+RayTracer.Utility.$fNFDataCVec3: <1A>
+RayTracer.Utility.$trModule:
+RayTracer.Utility.deg2rad: <1P(L)>
+RayTracer.Utility.fill: <1P(L)>
+RayTracer.Utility.getImageHeight: <1P(A,1P(A,1L),A,A)>
+RayTracer.Utility.getImageWidth: <1P(A,1P(1L,A),A,A)>
+RayTracer.Utility.kInfinity:
+RayTracer.Utility.kPi:
+RayTracer.Utility.rad2deg: <1P(L)>
+RayTracer.Utility.reflect: <1P(L,L,L)><1P(L,L,L)>
+RayTracer.Utility.refract: <1P(L,L,L)><1P(L,L,L)><1P(L)>
+RayTracer.Utility.schlick: <1P(L)><1P(L)>
+
+
+
+[ 2 of 11] Compiling RayTracer.Ray    ( src\RayTracer\Ray.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Ray.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Ray.$fGenericRay:
+RayTracer.Ray.$fNFDataRay: <1A>
+RayTracer.Ray.$tc'Ray:
+RayTracer.Ray.$tcRay:
+RayTracer.Ray.$trModule:
+RayTracer.Ray._direction: <1P(A,1L)>
+RayTracer.Ray._origin: <1P(1L,A)>
+RayTracer.Ray.at: <1P(1P(L,L,L),1P(L,L,L))><1P(L)>
+
+
+
+[ 3 of 11] Compiling RayTracer.Random ( src\RayTracer\Random.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Random.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Random.$trModule:
+RayTracer.Random.randomColor: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L>
+RayTracer.Random.randomInUnitDisk: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L>
+RayTracer.Random.randomInUnitHemisphere: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L><1P(L,L,L)>
+RayTracer.Random.randomInUnitSphere: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L>
+RayTracer.Random.randomUnitVector: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L>
+
+
+
+[ 4 of 11] Compiling RayTracer.Texture ( src\RayTracer\Texture.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Texture.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Texture.$fGenericTextureType:
+RayTracer.Texture.$fNFDataTextureType: <1A>
+RayTracer.Texture.$tc'Checker:
+RayTracer.Texture.$tc'SolidColor:
+RayTracer.Texture.$tcTextureType:
+RayTracer.Texture.$trModule:
+RayTracer.Texture._color: <1L>
+RayTracer.Texture._even: <1L>
+RayTracer.Texture._odd: <1L>
+RayTracer.Texture.value: <1L><1A><1A><1P(L,L,L)>
+
+
+[ 5 of 11] Compiling RayTracer.Camera ( src\RayTracer\Camera.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Camera.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Camera.$fGenericCamera:
+RayTracer.Camera.$fNFDataCamera: <1A>
+RayTracer.Camera.$tc'Camera:
+RayTracer.Camera.$tcCamera:
+RayTracer.Camera.$trModule:
+RayTracer.Camera._camPoint: <1P(1L,A,A,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._height: <1P(A,A,A,A,A,A,A,A,A,L,A)>
+RayTracer.Camera._horizontal: <1P(A,A,1L,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._lensRadius: <1P(A,A,A,A,L,A,A,A,A,A,A)>
+RayTracer.Camera._lowerLeftCorner: <1P(A,1L,A,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._spp: <1P(A,A,A,A,A,A,A,A,A,A,L)>
+RayTracer.Camera._u: <1P(A,A,A,A,A,1L,A,A,A,A,A)>
+RayTracer.Camera._v: <1P(A,A,A,A,A,A,1L,A,A,A,A)>
+RayTracer.Camera._vertical: <1P(A,A,A,1L,A,A,A,A,A,A,A)>
+RayTracer.Camera._w: <1P(A,A,A,A,A,A,A,1L,A,A,A)>
+RayTracer.Camera._width: <1P(A,A,A,A,A,A,A,A,L,A,A)>
+RayTracer.Camera.createCamera: <1P(L)><1P(L)><1P(L)><1P(L,L,L)><1P(L,L,L)><1P(L,L,L)><1P(L)><1P(L)><1P(L)>
+RayTracer.Camera.getRay: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1P(L)><1P(L)><1P(1P(L,L,L),1P(L,L,L),1P(L,L,L),1P(L,L,L),L,1P(L,L,L),1P(L,L,L),A,A,A,A)><1L>
+
+
+[ 6 of 11] Compiling RayTracer.Material ( src\RayTracer\Material.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Material.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Material.$fGenericHitRecord:
+RayTracer.Material.$fGenericMaterialType:
+RayTracer.Material.$fGenericScatterResult:
+RayTracer.Material.$fNFDataHitRecord: <1A>
+RayTracer.Material.$fNFDataMaterialType: <1A>
+RayTracer.Material.$fNFDataScatterResult: <1A>
+RayTracer.Material.$tc'Dielectric:
+RayTracer.Material.$tc'HitRecord:
+RayTracer.Material.$tc'Lambertian:
+RayTracer.Material.$tc'Metal:
+RayTracer.Material.$tc'ScatterResult:
+RayTracer.Material.$tcHitRecord:
+RayTracer.Material.$tcMaterialType:
+RayTracer.Material.$tcScatterResult:
+RayTracer.Material.$trModule:
+RayTracer.Material._albedo: <1L>
+RayTracer.Material._attenuation: <1P(1L,A)>
+RayTracer.Material._frontFace: <1P(A,A,A,A,A,1L,A)>
+RayTracer.Material._fuzz: <1L>
+RayTracer.Material._normal: <1P(A,1L,A,A,A,A,A)>
+RayTracer.Material._point: <1P(1L,A,A,A,A,A,A)>
+RayTracer.Material._refIdx: <1L>
+RayTracer.Material._scatter: <1P(A,1L)>
+RayTracer.Material._surfaceMat: <1P(A,A,A,A,A,A,1L)>
+RayTracer.Material._t: <1P(A,A,L,A,A,A,A)>
+RayTracer.Material._u: <1P(A,A,A,L,A,A,A)>
+RayTracer.Material._v: <1P(A,A,A,A,L,A,A)>
+RayTracer.Material.scatter: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L><1P(A,MP(L,L,L))><1P(LP(L,L,L),1P(L,L,L),A,A,A,ML,A)><1L>
+
+
+[ 7 of 11] Compiling RayTracer.Geometry ( src\RayTracer\Geometry.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Geometry.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Geometry.$fGenericAABB:
+RayTracer.Geometry.$fGenericBVHNode:
+RayTracer.Geometry.$fGenericHittableType:
+RayTracer.Geometry.$fNFDataAABB: <1A>
+RayTracer.Geometry.$fNFDataBVHNode: <1P(A,1L,1L)>
+RayTracer.Geometry.$fNFDataHittableType: <1L>
+RayTracer.Geometry.$tc'AABB:
+RayTracer.Geometry.$tc'BVH:
+RayTracer.Geometry.$tc'BVHNode:
+RayTracer.Geometry.$tc'Sphere:
+RayTracer.Geometry.$tcAABB:
+RayTracer.Geometry.$tcBVHNode:
+RayTracer.Geometry.$tcHittableType:
+RayTracer.Geometry.$trModule:
+RayTracer.Geometry._aabb: <1P(1L,A,A)>
+RayTracer.Geometry._left: <1P(A,1L,A)>
+RayTracer.Geometry._mat: <1L>
+RayTracer.Geometry._maxPos: <1P(A,1L)>
+RayTracer.Geometry._minPos: <1P(1L,A)>
+RayTracer.Geometry._node: <1L>
+RayTracer.Geometry._position: <1L>
+RayTracer.Geometry._radius: <1L>
+RayTracer.Geometry._right: <1P(A,A,1L)>
+RayTracer.Geometry.createAABB: <1L>
+RayTracer.Geometry.createBVH: <SL>
+RayTracer.Geometry.hit: <1L><1P(SP(L,L,L),SP(L,L,L))><1P(L)><1P(L)>
+
+
+
+[ 8 of 11] Compiling RayTracer.Color  ( src\RayTracer\Color.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Color.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Color.$trModule:
+RayTracer.Color.clampColor: <1P(L,L,L)>
+RayTracer.Color.kBlack:
+RayTracer.Color.kBlue:
+RayTracer.Color.kGreen:
+RayTracer.Color.kRed:
+RayTracer.Color.kWhite:
+RayTracer.Color.packR8G8B8A8: <1P(L,L,L)>
+RayTracer.Color.postProduction: <1P(L,L,L)>
+RayTracer.Color.toneMapping: <1P(L,L,L)>
+RayTracer.Color.unpackR8G8B8A8: <1P(L)>
+
+
+
+[ 9 of 11] Compiling RayTracer.Scene  ( src\RayTracer\Scene.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Scene.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Scene.$fGenericScene:
+RayTracer.Scene.$fNFDataScene: <1P(1L,A)>
+RayTracer.Scene.$tc'Scene:
+RayTracer.Scene.$tcScene:
+RayTracer.Scene.$trModule:
+RayTracer.Scene._graphRoot: <1P(1L,A)>
+RayTracer.Scene._recursiveDepth: <1P(A,L)>
+RayTracer.Scene.buildScene: <1L>
+RayTracer.Scene.createRandomSpheres: <1P(L)>
+RayTracer.Scene.createTestSpheres:
+
+
+
+[10 of 11] Compiling RayTracer.Renderer ( src\RayTracer\Renderer.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Renderer.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Renderer.$trModule:
+RayTracer.Renderer.render: <1P(L,L)><1P(LP(L,L,L),LP(L,L,L),LP(L,L,L),LP(L,L,L),L,LP(L,L,L),LP(L,L,L),A,L,L,L)>
+
+
+
+[11 of 11] Compiling RayTracer.Output ( src\RayTracer\Output.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Output.o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Output.$trModule:
+RayTracer.Output.outputImageByPPM: <1L><1P(1P(LP(L),LP(L)),1P(1P(L),1P(L)),L,L)><L>
+
+
+[ 1 of 11] Compiling RayTracer.Utility ( src\RayTracer\Utility.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Utility.p_o )
+
+==================== Strictness signatures ====================
+RayTracer.Utility.$fGenericCVec3:
+RayTracer.Utility.$fNFDataCVec3: <1A>
+RayTracer.Utility.$trModule:
+RayTracer.Utility.deg2rad: <1P(L)>
+RayTracer.Utility.fill: <1P(L)>
+RayTracer.Utility.getImageHeight: <1P(A,1P(A,1L),A,A)>
+RayTracer.Utility.getImageWidth: <1P(A,1P(1L,A),A,A)>
+RayTracer.Utility.kInfinity:
+RayTracer.Utility.kPi:
+RayTracer.Utility.rad2deg: <1P(L)>
+RayTracer.Utility.reflect: <1P(L,L,L)><1P(L,L,L)>
+RayTracer.Utility.refract: <1P(L,L,L)><1P(L,L,L)><1P(L)>
+RayTracer.Utility.schlick: <1P(L)><1P(L)>
+
+
+
+[ 2 of 11] Compiling RayTracer.Ray    ( src\RayTracer\Ray.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Ray.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Ray.$fGenericRay:
+RayTracer.Ray.$fNFDataRay: <1A>
+RayTracer.Ray.$tc'Ray:
+RayTracer.Ray.$tcRay:
+RayTracer.Ray.$trModule:
+RayTracer.Ray._direction: <1P(A,1L)>
+RayTracer.Ray._origin: <1P(1L,A)>
+RayTracer.Ray.at: <1P(1P(L,L,L),1P(L,L,L))><1P(L)>
+
+
+[ 3 of 11] Compiling RayTracer.Random ( src\RayTracer\Random.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Random.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Random.$trModule:
+RayTracer.Random.randomColor: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><SL>
+RayTracer.Random.randomInUnitDisk: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><SL>
+RayTracer.Random.randomInUnitHemisphere: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L><1P(L,L,L)>
+RayTracer.Random.randomInUnitSphere: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><SL>
+RayTracer.Random.randomUnitVector: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><SL>
+
+
+[ 4 of 11] Compiling RayTracer.Texture ( src\RayTracer\Texture.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Texture.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Texture.$fGenericTextureType:
+RayTracer.Texture.$fNFDataTextureType: <1A>
+RayTracer.Texture.$tc'Checker:
+RayTracer.Texture.$tc'SolidColor:
+RayTracer.Texture.$tcTextureType:
+RayTracer.Texture.$trModule:
+RayTracer.Texture._color: <1L>
+RayTracer.Texture._even: <1L>
+RayTracer.Texture._odd: <1L>
+RayTracer.Texture.value: <1L><1A><1A><1P(L,L,L)>
+
+
+
+[ 5 of 11] Compiling RayTracer.Camera ( src\RayTracer\Camera.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Camera.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Camera.$fGenericCamera:
+RayTracer.Camera.$fNFDataCamera: <1A>
+RayTracer.Camera.$tc'Camera:
+RayTracer.Camera.$tcCamera:
+RayTracer.Camera.$trModule:
+RayTracer.Camera._camPoint: <1P(1L,A,A,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._height: <1P(A,A,A,A,A,A,A,A,A,L,A)>
+RayTracer.Camera._horizontal: <1P(A,A,1L,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._lensRadius: <1P(A,A,A,A,L,A,A,A,A,A,A)>
+RayTracer.Camera._lowerLeftCorner: <1P(A,1L,A,A,A,A,A,A,A,A,A)>
+RayTracer.Camera._spp: <1P(A,A,A,A,A,A,A,A,A,A,L)>
+RayTracer.Camera._u: <1P(A,A,A,A,A,1L,A,A,A,A,A)>
+RayTracer.Camera._v: <1P(A,A,A,A,A,A,1L,A,A,A,A)>
+RayTracer.Camera._vertical: <1P(A,A,A,1L,A,A,A,A,A,A,A)>
+RayTracer.Camera._w: <1P(A,A,A,A,A,A,A,1L,A,A,A)>
+RayTracer.Camera._width: <1P(A,A,A,A,A,A,A,A,L,A,A)>
+RayTracer.Camera.createCamera: <1P(L)><1P(L)><1P(L)><1P(L,L,L)><1P(L,L,L)><1P(L,L,L)><1P(L)><1P(L)><1P(L)>
+RayTracer.Camera.getRay: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1P(L)><1P(L)><1P(LP(L,L,L),LP(L,L,L),LP(L,L,L),LP(L,L,L),L,LP(L,L,L),LP(L,L,L),A,A,A,A)><1L>
+
+
+[ 6 of 11] Compiling RayTracer.Material ( src\RayTracer\Material.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Material.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Material.$fGenericHitRecord:
+RayTracer.Material.$fGenericMaterialType:
+RayTracer.Material.$fGenericScatterResult:
+RayTracer.Material.$fNFDataHitRecord: <1A>
+RayTracer.Material.$fNFDataMaterialType: <1A>
+RayTracer.Material.$fNFDataScatterResult: <1A>
+RayTracer.Material.$tc'Dielectric:
+RayTracer.Material.$tc'HitRecord:
+RayTracer.Material.$tc'Lambertian:
+RayTracer.Material.$tc'Metal:
+RayTracer.Material.$tc'ScatterResult:
+RayTracer.Material.$tcHitRecord:
+RayTracer.Material.$tcMaterialType:
+RayTracer.Material.$tcScatterResult:
+RayTracer.Material.$trModule:
+RayTracer.Material._albedo: <1L>
+RayTracer.Material._attenuation: <1P(1L,A)>
+RayTracer.Material._frontFace: <1P(A,A,A,A,A,1L,A)>
+RayTracer.Material._fuzz: <1L>
+RayTracer.Material._normal: <1P(A,1L,A,A,A,A,A)>
+RayTracer.Material._point: <1P(1L,A,A,A,A,A,A)>
+RayTracer.Material._refIdx: <1L>
+RayTracer.Material._scatter: <1P(A,1L)>
+RayTracer.Material._surfaceMat: <1P(A,A,A,A,A,A,1L)>
+RayTracer.Material._t: <1P(A,A,L,A,A,A,A)>
+RayTracer.Material._u: <1P(A,A,A,L,A,A,A)>
+RayTracer.Material._v: <1P(A,A,A,A,L,A,A)>
+RayTracer.Material.scatter: <SP(SP(A,SCS(C1(L)),A,L),A,A,A,A,A,L,A)><1L><1P(A,MP(L,L,L))><1P(LP(L,L,L),LP(L,L,L),A,A,A,ML,A)><1L>
+
+
+[ 7 of 11] Compiling RayTracer.Geometry ( src\RayTracer\Geometry.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Geometry.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Geometry.$fGenericAABB:
+RayTracer.Geometry.$fGenericBVHNode:
+RayTracer.Geometry.$fGenericHittableType:
+RayTracer.Geometry.$fNFDataAABB: <1A>
+RayTracer.Geometry.$fNFDataBVHNode: <1P(A,1L,1L)>
+RayTracer.Geometry.$fNFDataHittableType: <1L>
+RayTracer.Geometry.$tc'AABB:
+RayTracer.Geometry.$tc'BVH:
+RayTracer.Geometry.$tc'BVHNode:
+RayTracer.Geometry.$tc'Sphere:
+RayTracer.Geometry.$tcAABB:
+RayTracer.Geometry.$tcBVHNode:
+RayTracer.Geometry.$tcHittableType:
+RayTracer.Geometry.$trModule:
+RayTracer.Geometry._aabb: <1P(1L,A,A)>
+RayTracer.Geometry._left: <1P(A,1L,A)>
+RayTracer.Geometry._mat: <1L>
+RayTracer.Geometry._maxPos: <1P(A,1L)>
+RayTracer.Geometry._minPos: <1P(1L,A)>
+RayTracer.Geometry._node: <1L>
+RayTracer.Geometry._position: <1L>
+RayTracer.Geometry._radius: <1L>
+RayTracer.Geometry._right: <1P(A,A,1L)>
+RayTracer.Geometry.createAABB: <1L>
+RayTracer.Geometry.createBVH: <SL>
+RayTracer.Geometry.hit: <1L><1P(SP(L,L,L),SP(L,L,L))><1P(L)><1P(L)>
+
+
+[ 8 of 11] Compiling RayTracer.Color  ( src\RayTracer\Color.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Color.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Color.$trModule:
+RayTracer.Color.clampColor: <1P(L,L,L)>
+RayTracer.Color.kBlack:
+RayTracer.Color.kBlue:
+RayTracer.Color.kGreen:
+RayTracer.Color.kRed:
+RayTracer.Color.kWhite:
+RayTracer.Color.packR8G8B8A8: <1P(L,L,L)>
+RayTracer.Color.postProduction:
+RayTracer.Color.toneMapping: <1P(L,L,L)>
+RayTracer.Color.unpackR8G8B8A8: <1P(L)>
+
+
+
+[ 9 of 11] Compiling RayTracer.Scene  ( src\RayTracer\Scene.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Scene.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Scene.$fGenericScene:
+RayTracer.Scene.$fNFDataScene: <1P(1L,A)>
+RayTracer.Scene.$tc'Scene:
+RayTracer.Scene.$tcScene:
+RayTracer.Scene.$trModule:
+RayTracer.Scene._graphRoot: <1P(1L,A)>
+RayTracer.Scene._recursiveDepth: <1P(A,L)>
+RayTracer.Scene.buildScene: <1L>
+RayTracer.Scene.createRandomSpheres: <1P(L)>
+RayTracer.Scene.createTestSpheres:
+
+
+[10 of 11] Compiling RayTracer.Renderer ( src\RayTracer\Renderer.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Renderer.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Renderer.$trModule:
+RayTracer.Renderer.render: <1P(L,L)><1P(LP(L,L,L),LP(L,L,L),LP(L,L,L),LP(L,L,L),L,LP(L,L,L),LP(L,L,L),A,L,L,L)>
+
+[11 of 11] Compiling RayTracer.Output ( src\RayTracer\Output.hs, D:\\Repositories\riowh\dist-newstyle\build\x86_64-windows\ghc-9.2.5\ray-tracer-0.1.0.0\build\RayTracer\Output.p_o ) [flags changed]
+
+==================== Strictness signatures ====================
+RayTracer.Output.$trModule:
+RayTracer.Output.outputImageByPPM: <1L><1P(1P(LP(L),LP(L)),1P(SP(L),SP(L)),L,L)>

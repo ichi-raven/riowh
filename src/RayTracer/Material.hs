@@ -39,7 +39,7 @@ data HitRecord = HitRecord
     _surfaceMat   :: !MaterialType
   } deriving (Generic, NFData)
 
-{-# INLINE scatter #-}
+--{-# INLINE scatter #-}
 scatter :: StatefulGen genType m => MaterialType -> Ray -> HitRecord -> genType -> m (Maybe ScatterResult)
 scatter (Lambertian albedo) ray hr gen = do
                                   rv <- randomUnitVector gen

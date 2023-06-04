@@ -16,9 +16,9 @@ main = do
     -- exec time measurement (start)
     startTime <- getCurrentTime
 
-    -- parameter
-    let width           = 1920
-        height          = 1080
+    -- rendering parameter
+    let width           = 640
+        height          = 480
         spp             = 7
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
@@ -49,7 +49,7 @@ main = do
     -- runtime threads num
     let nc = numCapabilities
 
-    putStrLn $ "start rendering... (Running in " ++  if nc > 1 then show nc ++ " threads parallel)" else "serial)"
+    putStrLn $ "start rendering... (Running in " ++ if nc > 1 then show nc ++ " threads parallel)" else "serial)"
     putStrLn $ "sphere num in scene : " ++ show (length spheres)
 
     let image = render scene camera

@@ -22,7 +22,7 @@ data TextureType = SolidColor
                  deriving (Generic, NFData)
 
 
-{-# INLINE value #-}
+--{-# INLINE value #-}
 value :: TextureType -> Double -> Double -> Point -> Color
 value (SolidColor color) u v pos = color
 value (Checker even odd) u v pos | sines < 0.0  = even

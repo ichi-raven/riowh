@@ -17,7 +17,7 @@ import GHC.Conc (numCapabilities)
 import Prelude hiding (zipWith)
 
 -- throw ray to the scene recursively
-{-# INLINE traceRay #-}
+--{-# INLINE traceRay #-}
 traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -> Scene -> m Color
 traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tmax of
                                           Just hr | depth <= 0  ->  return kBlack
@@ -35,7 +35,7 @@ traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tm
                                                           t         = 0.5 * (y  + 1.0)
 
 -- sampling one time by random ray
-{-# INLINE sample #-}
+--{-# INLINE sample #-}
 sample :: StatefulGen genType m => Scene -> Camera -> Int -> Int -> genType -> m Color
 sample scene camera x y gen = do
                               rx    <- uniformRM (-0.5, 0.5) gen
@@ -48,15 +48,15 @@ sample scene camera x y gen = do
                               ray <- getRay (1.0 - v) u camera gen
                               traceRay ray 0 kInfinity recursiveDepth gen scene
 
-{-# INLINE iterateStatefulGen #-}
+--{-# INLINE iterateStatefulGen #-}
 iterateStatefulGen :: RandomGen genType => Scene -> Camera -> Int -> Int -> (Color, genType) -> [Color]
 iterateStatefulGen scene camera x y (e, gen) = e : iterateStatefulGen scene camera x y (runStateGen gen (sample scene camera x y))
 
 -- rendering one pixel by sampling "spp" times
-{-# INLINE renderPixel #-}
+--{-# INLINE renderPixel #-}
 renderPixel :: Scene -> Camera -> Int -> Int -> Color
 renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegral spp)
-                  where width    = _width   camera
+                  where --width    = _width   camera
                         height   = _height  camera
                         spp      = _spp     camera
                         pixelIdx = x * height + y
@@ -66,9 +66,10 @@ renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegra
                         sampledColors = take spp $ iterateStatefulGen scene camera x y (kBlack, gen)
 
 -- rendering (split tasks parallel according to the number of runtime threads)
-{-# INLINE render #-}
+--{-# INLINE render #-}
 render :: Scene -> Camera -> Image
-render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parListChunk splitNum rdeepseq [((x, y), renderPixel scene camera x y) | x <- [0..width - 1], y <- [0..height - 1]]
+render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parListChunk splitNum rdeepseq [((x, y), perPixel scene camera x y) | x <- [0..width - 1], y <- [0..height - 1]]
                                  where width      = _width  camera
                                        height     = _height camera
                                        splitNum   = div (width * height) numCapabilities
+                                       perPixel   = (((postProduction .) .) .) . renderPixel 
