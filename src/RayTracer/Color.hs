@@ -26,8 +26,9 @@ clampColor src = fromXYZ (max (min 0.99999 r) 0.0, max (min 0.99999 g) 0.0, max 
 -- tone mapping (gamma correction)
 --{-# INLINE toneMapping #-}
 toneMapping :: Color -> Color
-toneMapping src = fromXYZ (sqrt r, sqrt g, sqrt b)
+toneMapping src = fromXYZ (mapping r, mapping g, mapping b)
                   where (r, g, b) = toXYZ src
+                        mapping   = sqrt 
 
 --{-# INLINE packR8G8B8A8 #-}
 packR8G8B8A8 :: Color -> Word32

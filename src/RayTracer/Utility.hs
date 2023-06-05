@@ -78,7 +78,7 @@ refract :: Direction -> Direction -> Double -> Direction
 refract uv n etaiOverEtat = rOutParallel <+> rOutPerp
                             where cosTheta      = (uv .^ (-1.0)) .* n
                                   rOutParallel  = (uv <+> (n .^ cosTheta)) .^ etaiOverEtat
-                                  nrOut         = (norm rOutParallel)
+                                  nrOut         = norm rOutParallel
                                   rOutPerp      = n .^ ((-1.0) * sqrt (1.0 - nrOut * nrOut))
 
 --{-# INLINE schlick #-}

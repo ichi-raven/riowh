@@ -59,7 +59,7 @@ makeRandomSpheres a amax b (bmin, bmax) gen = do
 -- create random sphere scene
 createRandomSpheres :: Int -> [HittableType]
 createRandomSpheres seed = presetSpheres ++ randomSpheres
-                        where   presetSpheres = 
+                        where   presetSpheres =
                                             [
                                               Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen)),
                                               Sphere (fromXYZ (0,     1.0, 0))  1.0   (Dielectric 1.5),
@@ -67,7 +67,7 @@ createRandomSpheres seed = presetSpheres ++ randomSpheres
                                               Sphere (fromXYZ (4.0,   1.0, 0))  1.0   (Metal      (SolidColor (fromXYZ (0.7, 0.6, 0.5))) 0.0)
                                             ]
                                 randomRange   = (-11, 11)
-                                randomSpheres = runStateGen_ (mkStdGen seed) $ makeRandomSpheres (fst randomRange) (snd randomRange) (fst randomRange) randomRange
+                                randomSpheres = runStateGen_ (mkStdGen seed) $ uncurry makeRandomSpheres randomRange (fst randomRange) randomRange
 
 createTestSpheres :: [HittableType]
 createTestSpheres =   [
@@ -76,5 +76,5 @@ createTestSpheres =   [
                         Sphere (fromXYZ (-1.0,  0,      -1.0))  0.4   (Lambertian (SolidColor kWhite)),
                         Sphere (fromXYZ (1.0,   0,      -1.0))  0.4   (Metal (SolidColor kBlue) 0.6),
                         Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal (SolidColor kWhite) 0.07),
-                        Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4) 
+                        Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4)
                       ]

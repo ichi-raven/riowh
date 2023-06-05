@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 module RayTracer.Geometry
 (
@@ -90,9 +90,6 @@ hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                                       Nothing    -> Just lhr
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
-                              -- where aabb  = _aabb  node
-                              --       left  = _left  node
-                              --       right = _right node
 
 -- AABB
 -- create AABB surrounding two AABB
@@ -149,7 +146,7 @@ sortObjects objects axis = sortBy cmp objects
                                                 (lx, ly, lz) = toXYZ $ _minPos laabb
                                                 (rx, ry, rz) = toXYZ $ _minPos raabb
 
--- リストの走査が1回で済むので多分こっちの方が速い
+-- probably faster (requires only one list traversal)
 splitAt' :: Int -> [a] -> ([a], [a])
 splitAt' n xs | n <= 0 = ([], xs)
 splitAt' _ []          = ([], [])

@@ -1,6 +1,7 @@
 module RayTracer.Output 
 (
-    outputImageByPPM
+    outputImageByPPM,
+    outputInfo
 ) where 
 
 import Control.Parallel.Strategies
@@ -8,6 +9,7 @@ import Control.DeepSeq
 import System.IO ( hClose, hPutStr, openFile, IOMode(WriteMode) )
 import qualified Data.Text as T
 import GHC.Conc (numCapabilities)
+import Data.Time
 
 import RayTracer.Utility
 import RayTracer.Color
@@ -31,13 +33,25 @@ ppmFormat image = T.unlines $ runEval $ parListChunk splitNum rdeepseq [showColo
                       splitNum  = div (width * height) numCapabilities
 
 -- combined output
-outputImageByPPM :: String -> Image -> IO()
+outputImageByPPM :: String -> Image -> IO ()
 outputImageByPPM outputFileName image = do
                                         let width   = getImageWidth   image
                                             height  = getImageHeight  image
                                         -- open file
                                         handle <- openFile outputFileName WriteMode
-                                        -- rendering (output ppm image)
+                                        -- output ppm image
                                         hPutStr handle $ T.unpack $ T.append (ppmHeader width height) (ppmFormat image)
                                         -- close file
+                                        hClose handle
+                                        
+                                        
+outputInfo :: UTCTime -> UTCTime -> String -> IO()
+outputInfo startTime endTime outputFile = do
+                                        let execTime = diffUTCTime endTime startTime
+                                        handle <- openFile outputFile WriteMode
+
+                                        hPutStr handle $ "start at : " ++ show startTime
+                                        hPutStr handle $ "end at : " ++ show endTime  
+                                        hPutStr handle $ "elapsed time : " ++ show execTime 
+
                                         hClose handle
