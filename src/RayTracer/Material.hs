@@ -1,11 +1,12 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass#-}
 
-module RayTracer.Material where 
+module RayTracer.Material where
 
 import RayTracer.Utility
 import RayTracer.Ray
 import RayTracer.Random
 import RayTracer.Texture
+import RayTracer.Color (kBlack)
 
 data MaterialType = Lambertian
                 {
@@ -19,6 +20,10 @@ data MaterialType = Lambertian
                 | Dielectric
                 {
                   _refIdx :: !Double
+                }
+                | DiffuseLight
+                {
+                  _emitColor :: !TextureType
                 }
                 deriving (Generic, NFData)
 
@@ -75,3 +80,10 @@ scatter (Dielectric refIdx) ray hr gen = do
                               if etaiOverEtat * sinTheta > 1.0 || r < reflectProb
                                   then return $ Just (ScatterResult attenuation reflected)
                                   else return $ Just (ScatterResult attenuation refracted)
+
+scatter (DiffuseLight _) _ _ _ = return Nothing
+
+-- could not use eta reduction
+emitted :: MaterialType -> Double -> Double -> Point -> Color
+emitted (DiffuseLight emitColor) u v p = value emitColor u v p
+emitted _ _ _ _ = kBlack

@@ -24,6 +24,33 @@ data HittableType =
     _radius   :: !Double,
     _mat      :: !MaterialType
   }
+  | XYRect
+  {
+    _x0       :: !Double,
+    _x1       :: !Double,
+    _y0       :: !Double,
+    _y1       :: !Double,
+    _k        :: !Double,
+    _mat      :: !MaterialType
+  }
+  | XZRect
+  {
+    _x0       :: !Double,
+    _x1       :: !Double,
+    _z0       :: !Double,
+    _z1       :: !Double,
+    _k        :: !Double,
+    _mat      :: !MaterialType
+  }
+  | YZRect
+  {
+    _y0       :: !Double,
+    _y1       :: !Double,
+    _z0       :: !Double,
+    _z1       :: !Double,
+    _k        :: !Double,
+    _mat      :: !MaterialType
+  }
   | BVH
   {
     _aabb   :: !AABB,
@@ -55,8 +82,11 @@ getSphereUV pos = (u, v)
 
 -- create sphere's axis-aligned bounding box
 createAABB :: HittableType -> AABB
-createAABB (Sphere pos radius _)  = AABB (pos <-> fill radius) (pos <+> fill radius)
-createAABB (BVH aabb _ _)         = aabb
+createAABB (Sphere pos radius _)    = AABB (pos <-> fill radius) (pos <+> fill radius)
+createAABB (XYRect x0 x1 y0 y1 k _) = AABB (fromXYZ (x0, y0, k - 0.0001)) (fromXYZ (x1, y1, k + 0.0001))
+createAABB (XZRect x0 x1 z0 z1 k _) = AABB (fromXYZ (x0, k - 0.0001, z0)) (fromXYZ (x1, k + 0.0001, z1))
+createAABB (YZRect y0 y1 z0 z1 k _) = AABB (fromXYZ (k - 0.0001, y0, z0)) (fromXYZ (k + 0.0001, y1, z1))
+createAABB (BVH aabb _ _)           = aabb
 
 -- collision detection
 -- improving efficiency here is very important
@@ -82,6 +112,58 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < t
                                                   frontFace     = (rdir .* outwardNormal) <= 0
                                                   normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
                                                   (u, v)        = getSphereUV outwardNormal
+
+hit (XYRect x0 x1 y0 y1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+                                                  || (x < x0 || x > x1 || y < y0 || y > y1)
+                                                  then Nothing
+                                                  else Just $ HitRecord rpos normal t u v frontFace mat
+                                                  where (ox, oy, oz) = toXYZ $ _origin ray
+                                                        rdir         = _direction ray
+                                                        (dx, dy, dz) = toXYZ rdir
+                                                        t = (k - oz) / dz
+                                                        x = ox + t * dx
+                                                        y = oy + t * dy
+                                                        u = (x - x0) / (x1 - x0)
+                                                        v = (y - y0) / (y1 - y0)
+                                                        rpos          = at ray t
+                                                        outwardNormal = fromXYZ(0, 0, 1)
+                                                        frontFace     = (rdir .* outwardNormal) <= 0
+                                                        normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
+
+hit (XZRect x0 x1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+                                                  || (x < x0 || x > x1 || z < z0 || z > z1)
+                                                  then Nothing
+                                                  else Just $ HitRecord rpos normal t u v frontFace mat
+                                                  where (ox, oy, oz) = toXYZ $ _origin ray
+                                                        rdir         = _direction ray
+                                                        (dx, dy, dz) = toXYZ rdir
+                                                        t = (k - oy) / dy
+                                                        x = ox + t * dx
+                                                        z = oz + t * dz
+                                                        u = (x - x0) / (x1 - x0)
+                                                        v = (z - z0) / (z1 - z0)
+                                                        rpos          = at ray t
+                                                        outwardNormal = fromXYZ(0, 1, 0)
+                                                        frontFace     = (rdir .* outwardNormal) <= 0
+                                                        normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
+
+hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+                                                  || (y < y0 || y > y1 || z < z0 || z > z1)
+                                                  then Nothing
+                                                  else Just $ HitRecord rpos normal t u v frontFace mat
+                                                  where (ox, oy, oz) = toXYZ $ _origin ray
+                                                        rdir         = _direction ray
+                                                        (dx, dy, dz) = toXYZ rdir
+                                                        t = (k - ox) / dx
+                                                        y = oy + t * dy
+                                                        z = oz + t * dz
+                                                        u = (y - y0) / (y1 - y0)
+                                                        v = (z - z0) / (z1 - z0)
+                                                        rpos          = at ray t
+                                                        outwardNormal = fromXYZ(1, 0, 0)
+                                                        frontFace     = (rdir .* outwardNormal) <= 0
+                                                        normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
+
 
 hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of

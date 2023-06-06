@@ -50,8 +50,8 @@ outputInfo startTime endTime outputFile = do
                                         let execTime = diffUTCTime endTime startTime
                                         handle <- openFile outputFile WriteMode
 
-                                        hPutStr handle $ "start at : " ++ show startTime
-                                        hPutStr handle $ "end at : " ++ show endTime  
-                                        hPutStr handle $ "elapsed time : " ++ show execTime 
+                                        hPutStr handle $ "start at : " ++ show startTime ++ "\n"
+                                        hPutStr handle $ "end at : " ++ show endTime ++ "\n"
+                                        hPutStr handle $ "elapsed time : " ++ show execTime ++ "\n"
 
                                         hClose handle

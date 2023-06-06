@@ -27,5 +27,5 @@ value :: TextureType -> Double -> Double -> Point -> Color
 value (SolidColor color) u v pos = color
 value (Checker even odd) u v pos | sines < 0.0  = even
                                  | otherwise    = odd
-                                 where (x, y, z) = toXYZ $ pos .^ (10.0)
+                                 where (x, y, z) = toXYZ $ pos .^ 100.0
                                        sines     = sin x * sin y * sin z

@@ -4,8 +4,10 @@ module RayTracer.Scene
 (
     Scene(..),
     buildScene,
-    createRandomSpheres,
-    createTestSpheres,
+    createRandomSpheresScene,
+    createTestSpheresScene,
+    createSimpleLightScene,
+    createEmptyCornellBoxScene,
     module RayTracer.Geometry
 ) where
 
@@ -21,12 +23,14 @@ import Data.List hiding (zipWith)
 data Scene = Scene
   {
     _graphRoot      :: !HittableType,
-    _recursiveDepth :: !Int
+    _objectNum      :: !Int,  
+    _recursiveDepth :: !Int,
+    _background     :: !Color
   } deriving (Generic, NFData)
 
 -- eta reduction
-buildScene :: [HittableType] -> Int -> Scene
-buildScene objects = Scene (createBVH objects)
+buildScene :: [HittableType] -> Int -> Color -> Scene
+buildScene objects = Scene (createBVH objects) (length objects)
 
 -- generate random spheres (amax - a) * (bmax - bmin) times
 makeRandomSpheres :: StatefulGen genType m => Int -> Int -> Int -> (Int, Int) -> genType -> m [HittableType]
@@ -57,9 +61,10 @@ makeRandomSpheres a amax b (bmin, bmax) gen = do
                                               else return addSphere
 
 -- create random sphere scene
-createRandomSpheres :: Int -> [HittableType]
-createRandomSpheres seed = presetSpheres ++ randomSpheres
-                        where   presetSpheres =
+createRandomSpheresScene :: Int -> Int -> Color -> Scene
+createRandomSpheresScene seed = buildScene objects
+                        where   objects       = presetSpheres ++ randomSpheres
+                                presetSpheres =
                                             [
                                               Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen)),
                                               Sphere (fromXYZ (0,     1.0, 0))  1.0   (Dielectric 1.5),
@@ -69,12 +74,41 @@ createRandomSpheres seed = presetSpheres ++ randomSpheres
                                 randomRange   = (-11, 11)
                                 randomSpheres = runStateGen_ (mkStdGen seed) $ uncurry makeRandomSpheres randomRange (fst randomRange) randomRange
 
-createTestSpheres :: [HittableType]
-createTestSpheres =   [
-                        Sphere (fromXYZ (0,     -100.5, -1.0))  100   (Lambertian (SolidColor kGreen)),
-                        Sphere (fromXYZ (0,     0.1,    -2.0))  0.3   (Lambertian (SolidColor kRed)),
-                        Sphere (fromXYZ (-1.0,  0,      -1.0))  0.4   (Lambertian (SolidColor kWhite)),
-                        Sphere (fromXYZ (1.0,   0,      -1.0))  0.4   (Metal (SolidColor kBlue) 0.6),
-                        Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal (SolidColor kWhite) 0.07),
-                        Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4)
-                      ]
+createTestSpheresScene :: Int -> Color -> Scene
+createTestSpheresScene = buildScene objects
+                    where objects = [
+                                      Sphere (fromXYZ (0,     -100.5, -1.0))  100   (Lambertian (SolidColor kGreen)),
+                                      Sphere (fromXYZ (0,     0.1,    -2.0))  0.3   (Lambertian (SolidColor kRed)),
+                                      Sphere (fromXYZ (-1.0,  0,      -1.0))  0.4   (Lambertian (SolidColor kWhite)),
+                                      Sphere (fromXYZ (1.0,   0,      -1.0))  0.4   (Metal (SolidColor kBlue) 0.6),
+                                      Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal (SolidColor kWhite) 0.07),
+                                      Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4)
+                                    ]
+
+createSimpleLightScene :: Int -> Color -> Scene
+createSimpleLightScene = buildScene objects
+                    where objects = [
+                                      Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen)),
+                                      Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue)),
+                                      Sphere (fromXYZ (0,   7.0, 0))    2.0   (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
+                                      XYRect 3.0 5.0 1.0 3.0 (-2.0) (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
+                                    ]
+
+createEmptyCornellBoxScene :: Int -> Color -> Scene
+createEmptyCornellBoxScene = buildScene objects
+                    where objects = [
+                                      YZRect 0 555.0 0 555.0 555.0  green,
+                                      YZRect 0 555.0 0 555.0 0      red,
+                                      XZRect 213.0 343.0 227.0 332.0 554.0 light,
+                                      XZRect 0 555.0 0 555.0 0 white, -- floor
+                                      XZRect 0 555.0 0 555.0 555.0 white,
+                                      XYRect 0 555.0 0 555.0 555.0 white,
+                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
+                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                    ]
+                          red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
+                          white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
+                          green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)
+                          light = DiffuseLight  $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
+                          metal = Metal (SolidColor kBlue) 0.6
+                          dielectric = Dielectric 1.5

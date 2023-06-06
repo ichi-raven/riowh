@@ -10,6 +10,7 @@ import RayTracer.Renderer
 
 import Data.Time
 import GHC.Conc (numCapabilities)
+import RayTracer.Color (kBlack)
 
 main :: IO ()
 main = do
@@ -17,35 +18,42 @@ main = do
     startTime <- getCurrentTime
 
     -- rendering parameter
-    let width           = 640
-        height          = 480
-        spp             = 1024
+    let width           = 500
+        height          = 500
+        spp             = 300
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 
     -- camera
-    let lookAt      = origin
-        lookFrom    = fromXYZ (13.0, 2.0, 3.0)
-        up          = fromXYZ (0, 1.0, 0)
-        vfov        = 20
-        distToFocus = 10.0
-        aperture    = 0.07
+    -- let lookAt      = origin
+    --     lookFrom    = fromXYZ (13.0, 2.0, 3.0)
+    --     up          = fromXYZ (0, 1.0, 0)
+    --     vfov        = 20
+    --     distToFocus = 10.0
+    --     aperture    = 0.07
     -- let lookAt      = fromXYZ (0, 0, -1.0)
     --     lookFrom    = origin
     --     up          = fromXYZ (0, 1.0, 0)
     --     vfov        = 90
     --     distToFocus = norm $ lookFrom <-> lookAt 
     --     aperture    = 0.02
+    let lookAt      = fromXYZ (278.0, 278.0, 0)
+        lookFrom    = fromXYZ (278.0, 278.0, -800.0)
+        up          = fromXYZ (0, 1.0, 0)
+        vfov        = 40
+        distToFocus = norm $ lookFrom <-> lookAt 
+        aperture    = 0.0
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
     -- geometry (spheres)
     let seed    = 42
-        spheres = createRandomSpheres seed
-                  --createTestSpheres
+
+    -- background color
+    let backgroundColor = kBlack
 
     -- build scene data
-    let scene = buildScene spheres recursiveDepth
-    putStrLn $ "sphere num in scene : " ++ show (length spheres)
+    let scene = createEmptyCornellBoxScene recursiveDepth backgroundColor
+    putStrLn $ "object num in scene : " ++ show (_objectNum scene)
 
     -- runtime threads num
     let nc = numCapabilities

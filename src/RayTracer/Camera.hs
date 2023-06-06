@@ -1,6 +1,6 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass, StandaloneDeriving #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
-module RayTracer.Camera where 
+module RayTracer.Camera where
 
 import System.Random.Stateful
 
@@ -14,9 +14,9 @@ data Camera = Camera
     _horizontal       :: !Direction,
     _vertical         :: !Direction,
     _lensRadius       :: !Double,
-    _u                :: !Direction,
-    _v                :: !Direction,
-    _w                :: !Direction,
+    _wb               :: !Direction,
+    _ub               :: !Direction,
+    _vb               :: !Direction,
     _width            :: !Int,
     _height           :: !Int,
     _spp              :: !Int
@@ -48,9 +48,8 @@ getRay s t camera gen = do
                             horizontal  = _horizontal       camera
                             vertical    = _vertical         camera
                             lensRadius  = _lensRadius       camera
-                            u           = _u                camera
-                            v           = _v                camera  
+                            u           = _ub               camera
+                            v           = _vb               camera
                             (x, y, _)   = toXYZ (rdu .^ lensRadius)
                             offset      = (u .^ x) <+> (v .^ y)
                         return $ Ray (orig <+> offset) (llc <+> (horizontal .^ s) <+> (vertical .^ t) <-> orig <-> offset)
-                        

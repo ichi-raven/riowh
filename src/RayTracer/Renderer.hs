@@ -23,16 +23,13 @@ traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tm
                                           Just hr | depth <= 0  ->  return kBlack
                                                   | otherwise   ->  do
                                                                     msr <- scatter (_surfaceMat hr) ray hr gen
+                                                                    let emit = emitted (_surfaceMat hr) (_u hr) (_v hr) (_point hr)
                                                                     case msr of
                                                                       Just sr -> do
                                                                                  res <- traceRay (_scatter sr) 0.001 tmax (depth - 1) gen scene
-                                                                                 return $ zipWith (*) (_attenuation sr) res
-                                                                      Nothing -> return kBlack -- almost never happens
-                                          Nothing ->  -- illumination (HACKY sky)
-                                                    return $ (fromXYZ (1.0, 1.0, 1.0) .^ (1.0 - t)) <+> (fromXYZ (0.5, 0.7, 1.0) .^ t)
-                                                    where unitDir   = normalize (_direction ray)
-                                                          (_, y, _) = toXYZ unitDir
-                                                          t         = 0.5 * (y  + 1.0)
+                                                                                 return $ emit <+> zipWith (*) (_attenuation sr) res
+                                                                      Nothing -> return emit
+                                          Nothing -> return $ _background scene 
 
 -- sampling one time by random ray
 --{-# INLINE sample #-}
