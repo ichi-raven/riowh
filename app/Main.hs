@@ -18,9 +18,9 @@ main = do
     startTime <- getCurrentTime
 
     -- rendering parameter
-    let width           = 500
-        height          = 500
-        spp             = 300
+    let width           = 1500
+        height          = 1500
+        spp             = 15000
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 
@@ -48,7 +48,7 @@ main = do
     -- build scene data
     let seed            = 42
         backgroundColor = kBlack
-        scene = createEmptyCornellBoxScene recursiveDepth backgroundColor
+        scene = createCornellBoxScene recursiveDepth backgroundColor
     putStrLn $ "object num in scene : " ++ show (_objectNum scene)
 
     -- runtime threads num

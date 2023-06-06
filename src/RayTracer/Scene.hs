@@ -7,7 +7,7 @@ module RayTracer.Scene
     createRandomSpheresScene,
     createTestSpheresScene,
     createSimpleLightScene,
-    createEmptyCornellBoxScene,
+    createCornellBoxScene,
     module RayTracer.Geometry
 ) where
 
@@ -94,8 +94,8 @@ createSimpleLightScene = buildScene objects
                                       XYRect 3.0 5.0 1.0 3.0 (-2.0) (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
                                     ]
 
-createEmptyCornellBoxScene :: Int -> Color -> Scene
-createEmptyCornellBoxScene = buildScene objects
+createCornellBoxScene :: Int -> Color -> Scene
+createCornellBoxScene = buildScene objects
                     where objects = [
                                       YZRect 0 555.0 0 555.0 555.0  green,
                                       YZRect 0 555.0 0 555.0 0      red,
