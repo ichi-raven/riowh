@@ -45,14 +45,10 @@ main = do
         aperture    = 0.0
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
-    -- geometry (spheres)
-    let seed    = 42
-
-    -- background color
-    let backgroundColor = kBlack
-
     -- build scene data
-    let scene = createEmptyCornellBoxScene recursiveDepth backgroundColor
+    let seed            = 42
+        backgroundColor = kBlack
+        scene = createEmptyCornellBoxScene recursiveDepth backgroundColor
     putStrLn $ "object num in scene : " ++ show (_objectNum scene)
 
     -- runtime threads num
