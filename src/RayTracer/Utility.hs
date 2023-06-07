@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module RayTracer.Utility 
 (
@@ -29,6 +31,9 @@ type Point      = CVec3
 type Direction  = CVec3
 --type Image      = Array(Int, Int) Color
 type Image      = UArray(Int, Int) Word32 
+
+instance (NFData i, IArray UArray e, Ix i, NFData e) => NFData (UArray i e) where
+  rnf arr = rnf (bounds arr) `seq` rnf (elems arr)
 
 -- constant
 kInfinity :: Double

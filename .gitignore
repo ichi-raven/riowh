@@ -15,10 +15,10 @@ cabal.sandbox.config
 *.prof
 *.aux
 *.hp
+*.ps
 *.eventlog
 .stack-work/
 cabal.project.local
-cabal.project.local~
 .HTF/
 .ghc.environment.*
 

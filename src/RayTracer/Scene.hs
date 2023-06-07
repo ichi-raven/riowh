@@ -66,7 +66,7 @@ createRandomSpheresScene seed = buildScene objects
                         where   objects       = presetSpheres ++ randomSpheres
                                 presetSpheres =
                                             [
-                                              Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen)),
+                                              Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
                                               Sphere (fromXYZ (0,     1.0, 0))  1.0   (Dielectric 1.5),
                                               Sphere (fromXYZ (-4.0,  1.0, 0))  1.0   (Lambertian (SolidColor (fromXYZ (0.4, 0.2, 0.1)))),
                                               Sphere (fromXYZ (4.0,   1.0, 0))  1.0   (Metal      (SolidColor (fromXYZ (0.7, 0.6, 0.5))) 0.0)
@@ -88,7 +88,7 @@ createTestSpheresScene = buildScene objects
 createSimpleLightScene :: Int -> Color -> Scene
 createSimpleLightScene = buildScene objects
                     where objects = [
-                                      Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen)),
+                                      Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
                                       Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue)),
                                       Sphere (fromXYZ (0,   7.0, 0))    2.0   (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
                                       XYRect 3.0 5.0 1.0 3.0 (-2.0) (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
@@ -103,8 +103,9 @@ createCornellBoxScene = buildScene objects
                                       XZRect 0 555.0 0 555.0 0 white, -- floor
                                       XZRect 0 555.0 0 555.0 555.0 white,
                                       XYRect 0 555.0 0 555.0 555.0 white,
-                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
-                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                      -- Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
+                                      -- Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                      createBox (fromXYZ (200, 100, 170)) (fromXYZ (390, 300, 230)) metal
                                     ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)

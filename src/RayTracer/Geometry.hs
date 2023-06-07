@@ -7,6 +7,7 @@ module RayTracer.Geometry
     hit,
     createAABB,
     createBVH,
+    createBox,
     module RayTracer.Ray
 ) where
 
@@ -51,6 +52,11 @@ data HittableType =
     _k        :: !Double,
     _mat      :: !MaterialType
   }
+  | Box
+  {
+    _aabb   :: !AABB,
+    _sides  :: ![HittableType]
+  }
   | BVH
   {
     _aabb   :: !AABB,
@@ -80,12 +86,27 @@ getSphereUV pos = (u, v)
                       u         = 1.0 - (phi + kPi) / (2.0 * kPi)
                       v         = (theta + kPi / 2.0) / kPi
 
+
+createBox :: Point -> Point -> MaterialType -> HittableType
+createBox minPos maxPos mat = Box (AABB minPos maxPos) sides
+                          where (ix, iy, iz) = toXYZ minPos
+                                (ax, ay, az) = toXYZ maxPos
+                                sides = [
+                                          XYRect ix ax iy ay az mat,
+                                          XYRect ix ax iy ay iz mat,
+                                          XZRect ix ax iz az ay mat,
+                                          XZRect ix ax iz az iy mat,
+                                          YZRect iy ay iz az ax mat,
+                                          YZRect iy ay iz az ix mat
+                                        ]
+
 -- create sphere's axis-aligned bounding box
 createAABB :: HittableType -> AABB
 createAABB (Sphere pos radius _)    = AABB (pos <-> fill radius) (pos <+> fill radius)
 createAABB (XYRect x0 x1 y0 y1 k _) = AABB (fromXYZ (x0, y0, k - 0.0001)) (fromXYZ (x1, y1, k + 0.0001))
 createAABB (XZRect x0 x1 z0 z1 k _) = AABB (fromXYZ (x0, k - 0.0001, z0)) (fromXYZ (x1, k + 0.0001, z1))
 createAABB (YZRect y0 y1 z0 z1 k _) = AABB (fromXYZ (k - 0.0001, y0, z0)) (fromXYZ (k + 0.0001, y1, z1))
+createAABB (Box aabb _)             = aabb
 createAABB (BVH aabb _ _)           = aabb
 
 -- collision detection
@@ -113,7 +134,7 @@ hit (Sphere position radius mat) ray tmin tmax = if discriminant < 0 || ((t1 < t
                                                   normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
                                                   (u, v)        = getSphereUV outwardNormal
 
-hit (XYRect x0 x1 y0 y1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+hit (XYRect x0 x1 y0 y1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                   || (x < x0 || x > x1 || y < y0 || y > y1)
                                                   then Nothing
                                                   else Just $ HitRecord rpos normal t u v frontFace mat
@@ -126,11 +147,11 @@ hit (XYRect x0 x1 y0 y1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                         u = (x - x0) / (x1 - x0)
                                                         v = (y - y0) / (y1 - y0)
                                                         rpos          = at ray t
-                                                        outwardNormal = fromXYZ(0, 0, 1)
+                                                        outwardNormal = fromXYZ (0, 0, 1)
                                                         frontFace     = (rdir .* outwardNormal) <= 0
                                                         normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
 
-hit (XZRect x0 x1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+hit (XZRect x0 x1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                   || (x < x0 || x > x1 || z < z0 || z > z1)
                                                   then Nothing
                                                   else Just $ HitRecord rpos normal t u v frontFace mat
@@ -143,11 +164,11 @@ hit (XZRect x0 x1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                         u = (x - x0) / (x1 - x0)
                                                         v = (z - z0) / (z1 - z0)
                                                         rpos          = at ray t
-                                                        outwardNormal = fromXYZ(0, 1, 0)
+                                                        outwardNormal = fromXYZ (0, 1, 0)
                                                         frontFace     = (rdir .* outwardNormal) <= 0
                                                         normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
 
-hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax) 
+hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                   || (y < y0 || y > y1 || z < z0 || z > z1)
                                                   then Nothing
                                                   else Just $ HitRecord rpos normal t u v frontFace mat
@@ -160,10 +181,11 @@ hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                         u = (y - y0) / (y1 - y0)
                                                         v = (z - z0) / (z1 - z0)
                                                         rpos          = at ray t
-                                                        outwardNormal = fromXYZ(1, 0, 0)
+                                                        outwardNormal = fromXYZ (1, 0, 0)
                                                         frontFace     = (rdir .* outwardNormal) <= 0
                                                         normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
 
+hit (Box _ sides) ray tmin tmax = hitToList sides ray tmin tmax
 
 hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
@@ -172,6 +194,13 @@ hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                                       Nothing    -> Just lhr
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
+
+-- Box等用
+hitToList :: [HittableType] -> Ray -> Double -> Double -> Maybe HitRecord
+hitToList [] _ _ _ = Nothing
+hitToList (e:es) ray tmin tmax = case hit e ray tmin tmax of 
+                                  Just hr -> Just hr  
+                                  Nothing -> hitToList es ray tmin tmax
 
 -- AABB
 -- create AABB surrounding two AABB

@@ -18,9 +18,9 @@ main = do
     startTime <- getCurrentTime
 
     -- rendering parameter
-    let width           = 1500
-        height          = 1500
-        spp             = 15000
+    let width           = 500
+        height          = 500
+        spp             = 100
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
 
@@ -41,7 +41,7 @@ main = do
         lookFrom    = fromXYZ (278.0, 278.0, -800.0)
         up          = fromXYZ (0, 1.0, 0)
         vfov        = 40
-        distToFocus = norm $ lookFrom <-> lookAt 
+        distToFocus = norm $ lookFrom <-> lookAt
         aperture    = 0.0
         camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
