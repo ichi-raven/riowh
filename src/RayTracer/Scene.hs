@@ -16,6 +16,7 @@ import RayTracer.Texture
 import RayTracer.Geometry
 import RayTracer.Material
 import RayTracer.Random
+import RayTracer.Camera
 
 import Prelude hiding (zipWith)
 import Data.List hiding (zipWith)
@@ -61,8 +62,8 @@ makeRandomSpheres a amax b (bmin, bmax) gen = do
                                               else return addSphere
 
 -- create random sphere scene
-createRandomSpheresScene :: Int -> Int -> Color -> Scene
-createRandomSpheresScene seed = buildScene objects
+createRandomSpheresScene :: Int -> Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
+createRandomSpheresScene seed width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
                         where   objects       = presetSpheres ++ randomSpheres
                                 presetSpheres =
                                             [
@@ -73,9 +74,16 @@ createRandomSpheresScene seed = buildScene objects
                                             ]
                                 randomRange   = (-11, 11)
                                 randomSpheres = runStateGen_ (mkStdGen seed) $ uncurry makeRandomSpheres randomRange (fst randomRange) randomRange
+                                lookAt      = origin
+                                lookFrom    = fromXYZ (13.0, 2.0, 3.0)
+                                up          = fromXYZ (0, 1.0, 0)
+                                vfov        = 20
+                                distToFocus = 10.0
+                                aperture    = 0.07
+                                camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
-createTestSpheresScene :: Int -> Color -> Scene
-createTestSpheresScene = buildScene objects
+createTestSpheresScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
+createTestSpheresScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
                     where objects = [
                                       Sphere (fromXYZ (0,     -100.5, -1.0))  100   (Lambertian (SolidColor kGreen)),
                                       Sphere (fromXYZ (0,     0.1,    -2.0))  0.3   (Lambertian (SolidColor kRed)),
@@ -84,18 +92,32 @@ createTestSpheresScene = buildScene objects
                                       Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal (SolidColor kWhite) 0.07),
                                       Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4)
                                     ]
+                          lookAt      = fromXYZ (0, 0, -1.0)
+                          lookFrom    = origin
+                          up          = fromXYZ (0, 1.0, 0)
+                          vfov        = 90
+                          distToFocus = norm $ lookFrom <-> lookAt 
+                          aperture    = 0.02
+                          camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
-createSimpleLightScene :: Int -> Color -> Scene
-createSimpleLightScene = buildScene objects
+createSimpleLightScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
+createSimpleLightScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
                     where objects = [
                                       Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
                                       Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue)),
                                       Sphere (fromXYZ (0,   7.0, 0))    2.0   (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
                                       XYRect 3.0 5.0 1.0 3.0 (-2.0) (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
                                     ]
+                          lookAt      = fromXYZ (13.0, 2.0, 3.0)
+                          lookFrom    = fromXYZ (13.0, 4.0, 0.0)
+                          up          = fromXYZ (0, 1.0, 0)
+                          vfov        = 20
+                          distToFocus = norm $ lookFrom <-> lookAt
+                          aperture    = 0.07
+                          camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
-createCornellBoxScene :: Int -> Color -> Scene
-createCornellBoxScene = buildScene objects
+createCornellBoxScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
+createCornellBoxScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
                     where objects = [
                                       YZRect 0 555.0 0 555.0 555.0  green,
                                       YZRect 0 555.0 0 555.0 0      red,
@@ -105,7 +127,7 @@ createCornellBoxScene = buildScene objects
                                       XYRect 0 555.0 0 555.0 555.0 white,
                                       -- Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
                                       -- Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
-                                      createBox (fromXYZ (200, 100, 170)) (fromXYZ (390, 300, 230)) metal
+                                      createBox (fromXYZ (200, 10, 170)) (fromXYZ (390, 200, 230)) dielectric
                                     ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
@@ -113,3 +135,11 @@ createCornellBoxScene = buildScene objects
                           light = DiffuseLight  $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
                           metal = Metal (SolidColor kBlue) 0.6
                           dielectric = Dielectric 1.5
+
+                          lookAt      = fromXYZ (278.0, 278.0, 0)
+                          lookFrom    = fromXYZ (278.0, 278.0, -800.0)
+                          up          = fromXYZ (0, 1.0, 0)
+                          vfov        = 40
+                          distToFocus = norm $ lookFrom <-> lookAt
+                          aperture    = 0.0
+                          camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus

@@ -10,7 +10,7 @@ import RayTracer.Renderer
 
 import Data.Time
 import GHC.Conc (numCapabilities)
-import RayTracer.Color (kBlack)
+import RayTracer.Color (kBlack, kWhite)
 
 main :: IO ()
 main = do
@@ -23,32 +23,12 @@ main = do
         spp             = 100
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
+        infoFileName    = "info.txt" 
 
-    -- camera
-    -- let lookAt      = origin
-    --     lookFrom    = fromXYZ (13.0, 2.0, 3.0)
-    --     up          = fromXYZ (0, 1.0, 0)
-    --     vfov        = 20
-    --     distToFocus = 10.0
-    --     aperture    = 0.07
-    -- let lookAt      = fromXYZ (0, 0, -1.0)
-    --     lookFrom    = origin
-    --     up          = fromXYZ (0, 1.0, 0)
-    --     vfov        = 90
-    --     distToFocus = norm $ lookFrom <-> lookAt 
-    --     aperture    = 0.02
-    let lookAt      = fromXYZ (278.0, 278.0, 0)
-        lookFrom    = fromXYZ (278.0, 278.0, -800.0)
-        up          = fromXYZ (0, 1.0, 0)
-        vfov        = 40
-        distToFocus = norm $ lookFrom <-> lookAt
-        aperture    = 0.0
-        camera      = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
-
-    -- build scene data
-    let seed            = 42
-        backgroundColor = kBlack
-        scene = createCornellBoxScene recursiveDepth backgroundColor
+    -- build scene and camera
+    let backgroundColor = kWhite
+        --(scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
+        (scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
     putStrLn $ "object num in scene : " ++ show (_objectNum scene)
 
     -- runtime threads num
@@ -64,7 +44,7 @@ main = do
     -- exec time measurement (end)
     endTime <- getCurrentTime
 
-    outputInfo startTime endTime "info.txt"
+    outputInfo startTime endTime infoFileName
 
     putStrLn $ "finished (elapsed time : " ++ show (diffUTCTime endTime startTime) ++ ")"
     putStrLn $ "saved result image to " ++ outputFileName

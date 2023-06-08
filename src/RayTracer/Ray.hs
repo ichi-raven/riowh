@@ -11,8 +11,8 @@ import RayTracer.Utility
 
 data Ray = Ray
   {
-    _origin     :: !Point,
-    _direction  :: !Direction
+    _origin     :: Point,
+    _direction  :: Direction
   } deriving (Generic, NFData)
 
 --{-# INLINE at #-}

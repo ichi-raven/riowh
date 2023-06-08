@@ -19,17 +19,17 @@ import Prelude hiding (zipWith)
 -- throw ray to the scene recursively
 --{-# INLINE traceRay #-}
 traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -> Scene -> m Color
-traceRay ray tmin tmax depth gen scene = case hit (_graphRoot scene) ray tmin tmax of
-                                          Just hr | depth <= 0  ->  return kBlack
-                                                  | otherwise   ->  do
-                                                                    msr <- scatter (_surfaceMat hr) ray hr gen
-                                                                    let emit = emitted (_surfaceMat hr) (_u hr) (_v hr) (_point hr)
-                                                                    case msr of
-                                                                      Just sr -> do
-                                                                                 res <- traceRay (_scatter sr) 0.001 tmax (depth - 1) gen scene
-                                                                                 return $ emit <+> zipWith (*) (_attenuation sr) res
-                                                                      Nothing -> return emit
-                                          Nothing -> return $ _background scene 
+traceRay ray tmin tmax depth gen scene | depth <= 0 = return kBlack
+                                       | otherwise  = case hit (_graphRoot scene) ray tmin tmax of
+                                          Just hr -> do
+                                                    let emit = emitted (_surfaceMat hr) (_u hr) (_v hr) (_point hr)
+                                                    msr <- scatter (_surfaceMat hr) ray hr gen
+                                                    case msr of
+                                                      Just sr -> do
+                                                                 res <- traceRay (_scatter sr) 0.001 tmax (depth - 1) gen scene
+                                                                 return $ emit <+> zipWith (*) (_attenuation sr) res
+                                                      Nothing -> return emit
+                                          Nothing -> return $ _background scene
 
 -- sampling one time by random ray
 --{-# INLINE sample #-}
@@ -68,4 +68,4 @@ render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parLis
                                  where width      = _width  camera
                                        height     = _height camera
                                        splitNum   = div (width * height) numCapabilities
-                                       perPixel   = (((postProduction .) .) .) . renderPixel 
+                                       perPixel   = (((postProduction .) .) .) . renderPixel

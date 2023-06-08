@@ -40,7 +40,7 @@ library
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.16.4.0,
+    build-depends:    base >= 4.18.0.0,
                       random >= 1.2,
                       array,
                       simple-vec3,
@@ -48,8 +48,7 @@ library
                       text,
                       parallel,
                       deepseq,
-                      time,
-                      JuicyPixels
+                      time
     hs-source-dirs:   src
     default-language: Haskell2010
     default-extensions: Strict StrictData
@@ -64,7 +63,7 @@ executable rayTracer
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
-        base ^>=4.16.4.0,
+        base >= 4.18.0.0,
         ray-tracer,
         random >= 1.2,
         array,
@@ -73,7 +72,6 @@ executable rayTracer
         parallel,
         deepseq,
         time,
-        JuicyPixels
 
     hs-source-dirs:   app
     default-language: Haskell2010

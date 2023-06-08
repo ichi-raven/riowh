@@ -57,11 +57,16 @@ data HittableType =
     _aabb   :: !AABB,
     _sides  :: ![HittableType]
   }
+  | Translate
+  {
+    _object :: !HittableType,
+    _offset :: !Point
+  }
   | BVH
   {
     _aabb   :: !AABB,
-    _left   :: !HittableType,
-    _right  :: !HittableType
+    _left   :: HittableType,
+    _right  :: HittableType
   } deriving (Generic, NFData)
 
 data AABB = AABB
@@ -102,12 +107,17 @@ createBox minPos maxPos mat = Box (AABB minPos maxPos) sides
 
 -- create sphere's axis-aligned bounding box
 createAABB :: HittableType -> AABB
-createAABB (Sphere pos radius _)    = AABB (pos <-> fill radius) (pos <+> fill radius)
-createAABB (XYRect x0 x1 y0 y1 k _) = AABB (fromXYZ (x0, y0, k - 0.0001)) (fromXYZ (x1, y1, k + 0.0001))
-createAABB (XZRect x0 x1 z0 z1 k _) = AABB (fromXYZ (x0, k - 0.0001, z0)) (fromXYZ (x1, k + 0.0001, z1))
-createAABB (YZRect y0 y1 z0 z1 k _) = AABB (fromXYZ (k - 0.0001, y0, z0)) (fromXYZ (k + 0.0001, y1, z1))
-createAABB (Box aabb _)             = aabb
-createAABB (BVH aabb _ _)           = aabb
+createAABB (Sphere pos radius _)      = AABB (pos <-> fill radius) (pos <+> fill radius)
+createAABB (XYRect x0 x1 y0 y1 k _)   = AABB (fromXYZ (x0, y0, k - 0.0001)) (fromXYZ (x1, y1, k + 0.0001))
+createAABB (XZRect x0 x1 z0 z1 k _)   = AABB (fromXYZ (x0, k - 0.0001, z0)) (fromXYZ (x1, k + 0.0001, z1))
+createAABB (YZRect y0 y1 z0 z1 k _)   = AABB (fromXYZ (k - 0.0001, y0, z0)) (fromXYZ (k + 0.0001, y1, z1))
+createAABB (Box aabb _)               = aabb
+createAABB (BVH aabb _ _)             = aabb
+createAABB (Translate object offset)  = AABB (minPos <+> offset) (maxPos <+> offset)
+                                    where aabb   = createAABB object
+                                          minPos = _minPos aabb
+                                          maxPos = _maxPos aabb
+
 
 -- collision detection
 -- improving efficiency here is very important
@@ -187,6 +197,23 @@ hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
 
 hit (Box _ sides) ray tmin tmax = hitToList sides ray tmin tmax
 
+hit (Translate object offset) ray tmin tmax = case hit object movedRay tmin tmax of
+                                                Nothing -> Nothing
+                                                Just hr -> Just nhr
+                                                      where translatedPos = offset <+> _point hr
+                                                            nrdir         = _direction movedRay
+                                                            t   = _t hr
+                                                            u   = _u hr
+                                                            v   = _v hr
+                                                            mat = _surfaceMat hr
+                                                            outwardNormal = _normal hr
+                                                            frontFace     = (nrdir .* outwardNormal) <= 0
+                                                            normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
+                                                            nhr           = HitRecord translatedPos normal t u v frontFace mat
+                                          where orig  = _origin ray
+                                                dir   = _direction ray
+                                                movedRay = Ray (orig <-> offset) dir
+
 hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
                                       (Just lhr)  -> case hit right ray tmin (_t lhr) of
@@ -195,12 +222,13 @@ hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                       Nothing     -> hit right ray tmin tmax
                                 else Nothing
 
--- Box等用
+
 hitToList :: [HittableType] -> Ray -> Double -> Double -> Maybe HitRecord
 hitToList [] _ _ _ = Nothing
-hitToList (e:es) ray tmin tmax = case hit e ray tmin tmax of 
-                                  Just hr -> Just hr  
-                                  Nothing -> hitToList es ray tmin tmax
+hitToList (e:es) ray tmin tmax = case (hit e ray tmin tmax, hitToList es ray tmin tmax) of
+                                  (Just hr, Just nhr) -> if _t hr < _t nhr then Just hr else Just nhr
+                                  (Just hr, Nothing)  -> Just hr
+                                  (Nothing, mnhr)     -> mnhr
 
 -- AABB
 -- create AABB surrounding two AABB
@@ -225,22 +253,22 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
 
 -- experimental
-hitAABB' :: AABB -> Ray -> Double -> Double -> Bool
-hitAABB' (AABB minPos maxPos) ray tmin tmax = inSlabs
-                                    where (dx, dy, dz)  = toXYZ (_direction ray)
-                                          (ox, oy, oz)  = toXYZ $ _origin ray
-                                          (ix, iy, iz)  = toXYZ minPos
-                                          (ax, ay, az)  = toXYZ maxPos
-                                          (t0x, t0y, t0z) = ((ix - ox) / dx, (iy - oy) / dy, (iz - oz) / dz)
-                                          (t1x, t1y, t1z) = ((ax - ox) / dx, (ay - oy) / dy, (az - oz) / dz)
-                                          inSlabs = check tmin tmax dx t0x t1x && check tmin tmax dy t0y t1y && check tmin tmax dz t0z t1z
+-- hitAABB' :: AABB -> Ray -> Double -> Double -> Bool
+-- hitAABB' (AABB minPos maxPos) ray tmin tmax = inSlabs
+--                                     where (dx, dy, dz)  = toXYZ (_direction ray)
+--                                           (ox, oy, oz)  = toXYZ $ _origin ray
+--                                           (ix, iy, iz)  = toXYZ minPos
+--                                           (ax, ay, az)  = toXYZ maxPos
+--                                           (t0x, t0y, t0z) = ((ix - ox) / dx, (iy - oy) / dy, (iz - oz) / dz)
+--                                           (t1x, t1y, t1z) = ((ax - ox) / dx, (ay - oy) / dy, (az - oz) / dz)
+--                                           inSlabs = check tmin tmax dx t0x t1x && check tmin tmax dy t0y t1y && check tmin tmax dz t0z t1z
 
-{-# INLINE check #-}
-check :: Double -> Double -> Double -> Double -> Double -> Bool
-check tmin tmax invD t0 t1 = ntmax > ntmin
-                          where (nt0, nt1) = if invD < 0.0 then (t1, t0) else (t0, t1)
-                                ntmin      = max nt0 tmin
-                                ntmax      = min nt1 tmax
+-- {-# INLINE check #-}
+-- check :: Double -> Double -> Double -> Double -> Double -> Bool
+-- check tmin tmax invD t0 t1 = ntmax > ntmin
+--                           where (nt0, nt1) = if invD < 0.0 then (t1, t0) else (t0, t1)
+--                                 ntmin      = max nt0 tmin
+--                                 ntmax      = min nt1 tmax
 
 -- BVH
 -- sort AABB by specified axis
