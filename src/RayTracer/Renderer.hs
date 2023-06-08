@@ -9,6 +9,7 @@ import RayTracer.Geometry
 import RayTracer.Material
 import RayTracer.Color
 import RayTracer.Ray
+import RayTracer.SamplingStrategy
 
 import Data.List hiding (zipWith)
 import Control.Parallel.Strategies
@@ -22,12 +23,23 @@ traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -
 traceRay ray tmin tmax depth gen scene | depth <= 0 = return kBlack
                                        | otherwise  = case hit (_graphRoot scene) ray tmin tmax of
                                           Just hr -> do
-                                                    let emit = emitted (_surfaceMat hr) (_u hr) (_v hr) (_point hr)
-                                                    msr <- scatter (_surfaceMat hr) ray hr gen
+                                                    let mat = _surfaceMat hr
+                                                        emit = emitted mat (_u hr) (_v hr) (_point hr) (_frontFace hr)
+                                                    msr <- scatter mat ray hr gen
                                                     case msr of
                                                       Just sr -> do
-                                                                 res <- traceRay (_scatter sr) 0.001 tmax (depth - 1) gen scene
-                                                                 return $ emit <+> zipWith (*) (_attenuation sr) res
+                                                                 let point       = _point hr
+                                                                     normal      = _normal hr
+                                                                     --cosinePDF   = CosinePDF $ buildFromW normal
+                                                                     light  = Dielectric 0
+                                                                     target = XZRect 213.0 343.0 227.0 332.0 554.0 light
+                                                                     hittablePDF = HittablePDF target point
+                                                                 direction <- generateAlongPDF hittablePDF gen
+                                                                 let scatter     = Ray point direction
+                                                                     atten       = _attenuation sr .^ scatteringPDF mat ray hr scatter
+                                                                     pdf         = value hittablePDF direction
+                                                                 res <- traceRay scatter 0.001 tmax (depth - 1) gen scene
+                                                                 return $ emit <+> (zipWith (*) atten res .^ (1.0 / pdf))
                                                       Nothing -> return emit
                                           Nothing -> return $ _background scene
 

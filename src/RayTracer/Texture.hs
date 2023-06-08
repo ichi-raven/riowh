@@ -3,7 +3,7 @@
 module RayTracer.Texture
 (
     TextureType(..),
-    value
+    sample
 ) where
 
 import RayTracer.Utility
@@ -35,9 +35,9 @@ clamp' :: (Double, Double) -> Double -> Double
 clamp' (low, high) a = min high (max a low)
 
 --{-# INLINE value #-}
-value :: TextureType -> Double -> Double -> Point -> Color
-value (SolidColor color) _ _ _ = color
-value (Checker even odd size) u v pos | sines < 0.0  = even
+sample :: TextureType -> Double -> Double -> Point -> Color
+sample (SolidColor color) _ _ _ = color
+sample (Checker even odd size) u v pos | sines < 0.0  = even
                                  | otherwise    = odd
                                  where (x, y, z) = toXYZ $ pos .^ size
                                        sines     = sin x * sin y * sin z

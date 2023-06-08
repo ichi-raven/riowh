@@ -20,15 +20,15 @@ main = do
     -- rendering parameter
     let width           = 500
         height          = 500
-        spp             = 100
+        spp             = 10
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 
 
     -- build scene and camera
-    let backgroundColor = kWhite
-        --(scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
-        (scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
+    let backgroundColor = kBlack
+        (scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
+        --(scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
     putStrLn $ "object num in scene : " ++ show (_objectNum scene)
 
     -- runtime threads num

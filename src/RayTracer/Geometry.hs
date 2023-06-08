@@ -8,6 +8,8 @@ module RayTracer.Geometry
     createAABB,
     createBVH,
     createBox,
+    pdfValue,
+    randomIn,
     module RayTracer.Ray
 ) where
 
@@ -61,6 +63,10 @@ data HittableType =
   {
     _object :: !HittableType,
     _offset :: !Point
+  }
+  | FlipFace
+  {
+    _object :: !HittableType
   }
   | BVH
   {
@@ -117,7 +123,7 @@ createAABB (Translate object offset)  = AABB (minPos <+> offset) (maxPos <+> off
                                     where aabb   = createAABB object
                                           minPos = _minPos aabb
                                           maxPos = _maxPos aabb
-
+createAABB (FlipFace object)          = createAABB object
 
 -- collision detection
 -- improving efficiency here is very important
@@ -200,19 +206,21 @@ hit (Box _ sides) ray tmin tmax = hitToList sides ray tmin tmax
 hit (Translate object offset) ray tmin tmax = case hit object movedRay tmin tmax of
                                                 Nothing -> Nothing
                                                 Just hr -> Just nhr
-                                                      where translatedPos = offset <+> _point hr
+                                                      where (HitRecord point outwardNormal t u v _ mat) = hr
+                                                            translatedPos = offset <+> point
                                                             nrdir         = _direction movedRay
-                                                            t   = _t hr
-                                                            u   = _u hr
-                                                            v   = _v hr
-                                                            mat = _surfaceMat hr
-                                                            outwardNormal = _normal hr
                                                             frontFace     = (nrdir .* outwardNormal) <= 0
                                                             normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
                                                             nhr           = HitRecord translatedPos normal t u v frontFace mat
                                           where orig  = _origin ray
                                                 dir   = _direction ray
                                                 movedRay = Ray (orig <-> offset) dir
+
+hit (FlipFace object) ray tmin tmax = case hit object ray tmin tmax of
+                                        Just hr -> Just nhr
+                                                where (HitRecord p n t u v ff mat) = hr
+                                                      nhr = HitRecord p n t u v (not ff) mat
+                                        Nothing -> Nothing
 
 hit (BVH aabb left right) ray tmin tmax = if hitAABB aabb ray tmin tmax
                                 then case hit left ray tmin tmax of
@@ -252,23 +260,28 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           (x, y, z)     = toXYZ (t1s <-> t0s)
                                           inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
 
--- experimental
--- hitAABB' :: AABB -> Ray -> Double -> Double -> Bool
--- hitAABB' (AABB minPos maxPos) ray tmin tmax = inSlabs
---                                     where (dx, dy, dz)  = toXYZ (_direction ray)
---                                           (ox, oy, oz)  = toXYZ $ _origin ray
---                                           (ix, iy, iz)  = toXYZ minPos
---                                           (ax, ay, az)  = toXYZ maxPos
---                                           (t0x, t0y, t0z) = ((ix - ox) / dx, (iy - oy) / dy, (iz - oz) / dz)
---                                           (t1x, t1y, t1z) = ((ax - ox) / dx, (ay - oy) / dy, (az - oz) / dz)
---                                           inSlabs = check tmin tmax dx t0x t1x && check tmin tmax dy t0y t1y && check tmin tmax dz t0z t1z
+pdfValue :: HittableType -> Point -> Direction -> Double 
+pdfValue (XZRect x0 x1 z0 z1 k mat) from direction = case hit this (Ray from direction) 0.001 kInfinity of
+                                                      Just hr -> distSq / (cosine * area)
+                                                        where area    = (x1 - x0) * (z1 - z0)
+                                                              t       = _t hr
+                                                              normal  = _normal hr
+                                                              ndir    = norm direction 
+                                                              distSq  = t * t * ndir * ndir
+                                                              cosine  = abs $ direction .* normal / ndir
+                                                      Nothing -> 0.0
+                                                    where this = XZRect x0 x1 z0 z1 k mat
 
--- {-# INLINE check #-}
--- check :: Double -> Double -> Double -> Double -> Double -> Bool
--- check tmin tmax invD t0 t1 = ntmax > ntmin
---                           where (nt0, nt1) = if invD < 0.0 then (t1, t0) else (t0, t1)
---                                 ntmin      = max nt0 tmin
---                                 ntmax      = min nt1 tmax
+pdfValue _ _ _  = 0.0 --TODO
+
+randomIn :: StatefulGen genType m => HittableType -> Point -> genType -> m Direction 
+randomIn (XZRect x0 x1 z0 z1 k mat) from gen = do
+                                            rx <- uniformRM (x0, x1) gen
+                                            rz <- uniformRM (z0, z1) gen 
+                                            let randomPoint = fromXYZ (rx, k, rz)
+                                            return $ randomPoint <-> from
+
+randomIn _ _ _ = return $ fromXYZ (1.0, 0, 0) --TODO
 
 -- BVH
 -- sort AABB by specified axis

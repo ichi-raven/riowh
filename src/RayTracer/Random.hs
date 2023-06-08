@@ -1,4 +1,5 @@
-module RayTracer.Random 
+
+module RayTracer.Random
 (
     module RayTracer.Random,
     module System.Random.Stateful
@@ -50,3 +51,13 @@ randomInUnitDisk gen = do
                         r     <- uniformRM (0, 1.0)       gen
                         theta <- uniformRM (0, 2.0 * kPi) gen
                         return $ fromXYZ (r * cos theta, r * sin theta, 0)
+
+randomCosineDirection :: StatefulGen genType m => genType -> m Direction
+randomCosineDirection gen = do
+                            r1 <- uniformRM (0, 1.0) gen
+                            r2 <- uniformRM (0, 1.0) gen
+                            let z   = sqrt (1 - r2)
+                                phi = 2 * kPi * r1
+                                x   = cos phi * sqrt r2
+                                y   = sin phi * sqrt r2
+                            return $ fromXYZ (x, y, z)

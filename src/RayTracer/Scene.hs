@@ -105,8 +105,8 @@ createSimpleLightScene width height spp recursiveDepth background = (buildScene 
                     where objects = [
                                       Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
                                       Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue)),
-                                      Sphere (fromXYZ (0,   7.0, 0))    2.0   (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
-                                      XYRect 3.0 5.0 1.0 3.0 (-2.0) (DiffuseLight (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
+                                      Sphere (fromXYZ (0,   7.0, 0))    2.0   (Emitter (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
+                                      XYRect 3.0 5.0 1.0 3.0 (-2.0) (Emitter (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
                                     ]
                           lookAt      = fromXYZ (13.0, 2.0, 3.0)
                           lookFrom    = fromXYZ (13.0, 4.0, 0.0)
@@ -121,18 +121,18 @@ createCornellBoxScene width height spp recursiveDepth background = (buildScene o
                     where objects = [
                                       YZRect 0 555.0 0 555.0 555.0  green,
                                       YZRect 0 555.0 0 555.0 0      red,
-                                      XZRect 213.0 343.0 227.0 332.0 554.0 light,
+                                      FlipFace $ XZRect 213.0 343.0 227.0 332.0 554.0 light,
                                       XZRect 0 555.0 0 555.0 0 white, -- floor
                                       XZRect 0 555.0 0 555.0 555.0 white,
                                       XYRect 0 555.0 0 555.0 555.0 white,
-                                      -- Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
-                                      -- Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
-                                      createBox (fromXYZ (200, 10, 170)) (fromXYZ (390, 200, 230)) dielectric
+                                      --Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
+                                      --Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric,
+                                      createBox (fromXYZ (200, 0, 170)) (fromXYZ (390, 300, 230)) white
                                     ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
                           green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)
-                          light = DiffuseLight  $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
+                          light = Emitter       $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
                           metal = Metal (SolidColor kBlue) 0.6
                           dielectric = Dielectric 1.5
 

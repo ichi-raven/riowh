@@ -14,16 +14,14 @@ data Camera = Camera
     _horizontal       :: !Direction,
     _vertical         :: !Direction,
     _lensRadius       :: !Double,
-    _wb               :: !Direction,
-    _ub               :: !Direction,
-    _vb               :: !Direction,
+    _basis            :: !ONB,
     _width            :: !Int,
     _height           :: !Int,
     _spp              :: !Int
   } deriving (Generic, NFData)
 
 createCamera :: Int -> Int -> Int -> Point -> Point -> Direction -> Double -> Double -> Double -> Camera
-createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camera pos llc vertical horizontal lensRadius u v w width height spp
+createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camera pos llc vertical horizontal lensRadius onb width height spp
           where pos             = lookFrom
                 theta           = deg2rad vfov
                 h               = tan (theta / 2)
@@ -33,6 +31,7 @@ createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camer
                 w               = normalize (lookFrom <-> lookAt)
                 u               = normalize (up >< w)
                 v               = w >< u
+                onb             = ONB u v w 
                 vertical        = v .^ (viewportHeight * focusDist)
                 horizontal      = u .^ (viewportWidth  * focusDist)
                 llc             = pos <-> (horizontal .^ 0.5) <-> (vertical .^ 0.5) <-> (w .^ focusDist)
@@ -48,8 +47,9 @@ getRay s t camera gen = do
                             horizontal  = _horizontal       camera
                             vertical    = _vertical         camera
                             lensRadius  = _lensRadius       camera
-                            u           = _ub               camera
-                            v           = _vb               camera
+                            uvw         = _basis            camera 
+                            u           = _ub               uvw
+                            v           = _vb               uvw
                             (x, y, _)   = toXYZ (rdu .^ lensRadius)
                             offset      = (u .^ x) <+> (v .^ y)
                         return $ Ray (orig <+> offset) (llc <+> (horizontal .^ s) <+> (vertical .^ t) <-> orig <-> offset)

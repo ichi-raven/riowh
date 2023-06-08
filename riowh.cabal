@@ -32,6 +32,7 @@ library
                       RayTracer.Ray
                       RayTracer.Renderer
                       RayTracer.Scene
+                      RayTracer.SamplingStrategy
                       RayTracer.Texture
                       RayTracer.Utility
 
@@ -78,6 +79,6 @@ executable rayTracer
     default-extensions:  Strict StrictData
     ghc-options: -O2
                  -rtsopts -threaded
-                 -j12
-                 "-with-rtsopts=-N16"
+                 -j4
+                 "-with-rtsopts=-N8"
     --ghc-options: -O2 -threaded -fprof-auto -j12 "-with-rtsopts=-N -p -s -hc -lf -i0.1"

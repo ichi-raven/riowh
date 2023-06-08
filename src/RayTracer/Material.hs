@@ -21,7 +21,7 @@ data MaterialType = Lambertian
                 {
                   _refIdx :: !Double
                 }
-                | DiffuseLight
+                | Emitter
                 {
                   _emitColor :: !TextureType
                 }
@@ -30,7 +30,8 @@ data MaterialType = Lambertian
 data ScatterResult = ScatterResult
   {
     _attenuation  :: !Color,
-    _scatter      :: !Ray
+    _scatter      :: !Ray,
+    _pdf          :: !Double
   } deriving (Generic, NFData)
 
 data HitRecord = HitRecord
@@ -44,15 +45,18 @@ data HitRecord = HitRecord
     _surfaceMat   :: !MaterialType
   } deriving (Generic, NFData)
 
+
 --{-# INLINE scatter #-}
 scatter :: StatefulGen genType m => MaterialType -> Ray -> HitRecord -> genType -> m (Maybe ScatterResult)
 scatter (Lambertian albedo) ray hr gen = do
-                                  rv <- randomUnitVector gen
+                                  rv <- randomCosineDirection gen
                                   let point     = _point hr
                                       normal    = _normal hr
-                                      direction = normalize $ normal <+> rv
-                                      sampled   = value albedo (_u hr) (_v hr) point
-                                  return $ Just $ ScatterResult sampled (Ray point direction)
+                                      onb       = buildFromW normal 
+                                      direction = normalize $ localPos onb rv
+                                      sampled   = sample albedo (_u hr) (_v hr) point
+                                      pdf       = _wb onb .* direction / pi 
+                                  return $ Just $ ScatterResult sampled (Ray point direction) pdf
 
 scatter (Metal albedo fuzz) ray hr gen = do
                                   v <- randomInUnitSphere gen
@@ -60,9 +64,9 @@ scatter (Metal albedo fuzz) ray hr gen = do
                                         normal    = _normal hr
                                         reflected = reflect (normalize (_direction ray)) normal
                                         scattered = Ray point $ normalize (reflected <+> (v .^ fuzz))
-                                        sampled   = value albedo (_u hr) (_v hr) point
+                                        sampled   = sample albedo (_u hr) (_v hr) point
                                   return $ if (reflected .* normal) > 0
-                                            then Just (ScatterResult sampled scattered)
+                                            then Just $ ScatterResult sampled scattered 0-- TODO
                                             else Nothing
 
 scatter (Dielectric refIdx) ray hr gen = do
@@ -78,12 +82,20 @@ scatter (Dielectric refIdx) ray hr gen = do
                                   reflectProb   = schlick cosTheta etaiOverEtat
                               r <- uniformRM (0.0, 1.0) gen
                               if etaiOverEtat * sinTheta > 1.0 || r < reflectProb
-                                  then return $ Just (ScatterResult attenuation reflected)
-                                  else return $ Just (ScatterResult attenuation refracted)
+                                  then return $ Just $ ScatterResult attenuation reflected 0-- TODO
+                                  else return $ Just $ ScatterResult attenuation refracted 0-- TODO
 
-scatter (DiffuseLight _) _ _ _ = return Nothing
+scatter (Emitter _) _ _ _ = return Nothing
+
+scatteringPDF :: MaterialType -> Ray -> HitRecord -> Ray -> Double
+scatteringPDF (Lambertian _) inRay hr scatteredRay = if cosine < 0.0 then 0.0 else cosine / pi
+                                                where sdir = normalize $ _direction scatteredRay
+                                                      cosine = _normal hr .* sdir
+scatteringPDF (Metal _ _) inRay hr scatteredRay      = 0 -- TODO
+scatteringPDF (Dielectric _) inRay hr scatteredRay   = 0 -- TODO
+scatteringPDF (Emitter _) inRay hr scatteredRay = 0 -- TODO
 
 -- could not use eta reduction
-emitted :: MaterialType -> Double -> Double -> Point -> Color
-emitted (DiffuseLight emitColor) u v p = value emitColor u v p
-emitted _ _ _ _ = kBlack
+emitted :: MaterialType -> Double -> Double -> Point -> Bool -> Color
+emitted (Emitter emitColor) u v p frontFace = if frontFace then sample emitColor u v p else kBlack
+emitted _ _ _ _ _ = kBlack

@@ -92,3 +92,24 @@ schlick :: Double -> Double -> Double
 schlick cosine refIdx = r0sq + (1.0 - r0sq) * ((1.0 - cosine) ** 5.0)
                         where r0    = (1.0 - refIdx) / (1.0 + refIdx)
                               r0sq  = r0 * r0
+
+-- OrthoNormal Basis
+data ONB = ONB
+  {
+    _ub :: !Direction,
+    _vb :: !Direction,
+    _wb :: !Direction
+  } deriving (Generic, NFData)
+
+localXYZ :: ONB -> Double -> Double -> Double -> Point
+localXYZ (ONB u v w) a b c = u .^ a <+> v .^ b <+> w .^ c
+localPos :: ONB -> Point -> Point
+localPos (ONB u v w) point = u .^ a <+> v .^ b <+> w .^ c
+                      where (a, b, c) = toXYZ point
+buildFromW :: Direction -> ONB
+buildFromW normal = ONB u v w
+                where w = normalize normal
+                      (wx, _, _) = toXYZ w
+                      a = fromXYZ $ if abs wx > 0.9 then (0, 1.0, 0) else (1.0, 0, 0)
+                      v = normalize $ w >< a
+                      u = w >< v
