@@ -125,13 +125,14 @@ createCornellBoxScene width height spp recursiveDepth background = (buildScene o
                                       XZRect 0 555.0 0 555.0 0 white, -- floor
                                       XZRect 0 555.0 0 555.0 555.0 white,
                                       XYRect 0 555.0 0 555.0 555.0 white,
-                                      --Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
-                                      --Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric,
-                                      createBox (fromXYZ (200, 0, 170)) (fromXYZ (390, 300, 230)) white
+                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 white,
+                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 blue
+                                      --createBox (fromXYZ (200, 0, 170)) (fromXYZ (390, 300, 230)) white
                                     ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
                           green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)
+                          blue  = Lambertian    $ SolidColor kBlue
                           light = Emitter       $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
                           metal = Metal (SolidColor kBlue) 0.6
                           dielectric = Dielectric 1.5

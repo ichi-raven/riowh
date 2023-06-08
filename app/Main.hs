@@ -20,7 +20,7 @@ main = do
     -- rendering parameter
     let width           = 500
         height          = 500
-        spp             = 10
+        spp             = 20
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 
