@@ -6,7 +6,7 @@ module RayTracer.Renderer
 import RayTracer.Scene
 import RayTracer.Camera
 import RayTracer.Geometry
-import RayTracer.Material
+import RayTracer.Scatter
 import RayTracer.Color
 import RayTracer.Ray
 import RayTracer.SamplingStrategy
@@ -16,31 +16,42 @@ import Control.Parallel.Strategies
 import Control.DeepSeq
 import GHC.Conc (numCapabilities)
 import Prelude hiding (zipWith)
+import RayTracer.Material (HitRecord)
+
+importanceSampling :: StatefulGen genType m => Ray -> Double -> Int -> Color -> HitRecord -> ScatterRecord -> genType -> Scene -> m Color
+importanceSampling ray tmax depth emit hr sr gen scene = if _isSpecular sr 
+                                                        then do
+                                                            res <- traceRay (_scatter sr) 0.001 tmax (depth - 1) gen scene
+                                                            return $ zipWith (*) (_attenuation sr) res
+                                                        else do
+                                                            let point       = _point hr
+                                                                normal      = _normal hr
+                                                                lights      = _lights scene
+                                                                hittablePDF = HittablePDF lights point
+                                                                mixturePDF  = MixturePDF hittablePDF (_pdf sr)
+                                                            direction <- generateAlongPDF mixturePDF gen
+                                                            let scatter        = Ray point direction
+                                                                mat            = _surfaceMat hr
+                                                                correctedAtten = _attenuation sr .^ scatteringPDF mat ray hr scatter
+                                                                invPDFVal      = 1.0 / value mixturePDF direction
+                                                            res <- traceRay scatter 0.001 tmax (depth - 1) gen scene
+                                                            return $ emit <+> zipWith (*) correctedAtten res .^ invPDFVal
+
+checkScatter :: StatefulGen genType m => Ray -> Double -> Int -> HitRecord -> genType -> Scene -> m Color
+checkScatter ray tmax depth hr gen scene = do
+                            let mat   = _surfaceMat hr
+                                emit  = emitted mat (_u hr) (_v hr) (_point hr) (_frontFace hr)
+                            msr <- scatter mat ray hr gen
+                            case msr of
+                              Just sr -> importanceSampling ray tmax depth emit hr sr gen scene
+                              Nothing -> return emit
 
 -- throw ray to the scene recursively
 --{-# INLINE traceRay #-}
 traceRay :: StatefulGen genType m => Ray -> Double -> Double -> Int -> genType -> Scene -> m Color
 traceRay ray tmin tmax depth gen scene | depth <= 0 = return kBlack
-                                       | otherwise  = case hit (_graphRoot scene) ray tmin tmax of
-                                          Just hr -> do
-                                                    let mat = _surfaceMat hr
-                                                        emit = emitted mat (_u hr) (_v hr) (_point hr) (_frontFace hr)
-                                                    msr <- scatter mat ray hr gen
-                                                    case msr of
-                                                      Just sr -> do
-                                                                 let point       = _point hr
-                                                                     normal      = _normal hr
-                                                                     --cosinePDF   = CosinePDF $ buildFromW normal
-                                                                     light  = Dielectric 0
-                                                                     target = XZRect 213.0 343.0 227.0 332.0 554.0 light
-                                                                     hittablePDF = HittablePDF target point
-                                                                 direction <- generateAlongPDF hittablePDF gen
-                                                                 let scatter     = Ray point direction
-                                                                     atten       = _attenuation sr .^ scatteringPDF mat ray hr scatter
-                                                                     pdf         = value hittablePDF direction
-                                                                 res <- traceRay scatter 0.001 tmax (depth - 1) gen scene
-                                                                 return $ emit <+> (zipWith (*) atten res .^ (1.0 / pdf))
-                                                      Nothing -> return emit
+                                       | otherwise  = case hit (_root scene) ray tmin tmax of
+                                          Just hr -> checkScatter ray tmax depth hr gen scene
                                           Nothing -> return $ _background scene
 
 -- sampling one time by random ray
@@ -59,7 +70,7 @@ sample scene camera x y gen = do
 
 --{-# INLINE iterateStatefulGen #-}
 iterateStatefulGen :: RandomGen genType => Scene -> Camera -> Int -> Int -> (Color, genType) -> [Color]
-iterateStatefulGen scene camera x y (e, gen) = e : iterateStatefulGen scene camera x y (runStateGen gen (sample scene camera x y))
+iterateStatefulGen scene camera x y (e, gen) = removeNaN e : iterateStatefulGen scene camera x y (runStateGen gen (sample scene camera x y))
 
 -- rendering one pixel by sampling "spp" times
 --{-# INLINE renderPixel #-}
@@ -67,8 +78,8 @@ renderPixel :: Scene -> Camera -> Int -> Int -> Color
 renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegral spp)
                   where height   = _height  camera
                         spp      = _spp     camera
-                        pixelIdx = x * height + y
-                        gen      = mkStdGen pixelIdx
+                        seed     = x * height + y + 42 -- praying to the ANSWER OF ALL
+                        gen      = mkStdGen seed
                         takeDrop = drop 1 . take (spp + 1)
                         -- NO parallelization (too much SPARKs)
                         sampledColors = takeDrop $ iterateStatefulGen scene camera x y (kBlack, gen)

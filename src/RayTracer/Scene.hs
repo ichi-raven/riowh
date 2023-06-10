@@ -14,7 +14,7 @@ module RayTracer.Scene
 import RayTracer.Color
 import RayTracer.Texture
 import RayTracer.Geometry
-import RayTracer.Material
+import RayTracer.Scatter
 import RayTracer.Random
 import RayTracer.Camera
 
@@ -23,15 +23,16 @@ import Data.List hiding (zipWith)
 
 data Scene = Scene
   {
-    _graphRoot      :: !HittableType,
-    _objectNum      :: !Int,  
+    _root           :: !HittableType,
+    _lights         :: !HittableType,
+    _objectNum      :: !Int,
     _recursiveDepth :: !Int,
     _background     :: !Color
   } deriving (Generic, NFData)
 
 -- eta reduction
-buildScene :: [HittableType] -> Int -> Color -> Scene
-buildScene objects = Scene (createBVH objects) (length objects)
+buildScene :: [HittableType] -> [HittableType] -> Int -> Color -> Scene
+buildScene objects lights = Scene (createBVH objects) (List lights) (length objects)
 
 -- generate random spheres (amax - a) * (bmax - bmin) times
 makeRandomSpheres :: StatefulGen genType m => Int -> Int -> Int -> (Int, Int) -> genType -> m [HittableType]
@@ -63,8 +64,9 @@ makeRandomSpheres a amax b (bmin, bmax) gen = do
 
 -- create random sphere scene
 createRandomSpheresScene :: Int -> Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
-createRandomSpheresScene seed width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
+createRandomSpheresScene seed width height spp recursiveDepth background = (buildScene objects lights recursiveDepth background, camera)
                         where   objects       = presetSpheres ++ randomSpheres
+                                lights        = []
                                 presetSpheres =
                                             [
                                               Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
@@ -83,7 +85,7 @@ createRandomSpheresScene seed width height spp recursiveDepth background = (buil
                                 camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
 createTestSpheresScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
-createTestSpheresScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
+createTestSpheresScene width height spp recursiveDepth background = (buildScene objects lights recursiveDepth background, camera)
                     where objects = [
                                       Sphere (fromXYZ (0,     -100.5, -1.0))  100   (Lambertian (SolidColor kGreen)),
                                       Sphere (fromXYZ (0,     0.1,    -2.0))  0.3   (Lambertian (SolidColor kRed)),
@@ -92,22 +94,25 @@ createTestSpheresScene width height spp recursiveDepth background = (buildScene 
                                       Sphere (fromXYZ (-0.6,  1.8,    -1.7))  0.9   (Metal (SolidColor kWhite) 0.07),
                                       Sphere (fromXYZ (0,     0,      -1.0))  0.45  (Dielectric 2.4)
                                     ]
+                          lights = []
                           lookAt      = fromXYZ (0, 0, -1.0)
                           lookFrom    = origin
                           up          = fromXYZ (0, 1.0, 0)
                           vfov        = 90
-                          distToFocus = norm $ lookFrom <-> lookAt 
+                          distToFocus = norm $ lookFrom <-> lookAt
                           aperture    = 0.02
                           camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
 createSimpleLightScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
-createSimpleLightScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
+createSimpleLightScene width height spp recursiveDepth background = (buildScene objects lights recursiveDepth background, camera)
                     where objects = [
                                       Sphere (fromXYZ (0,   -1000, 0))  1000  (Lambertian (Checker (fromXYZ (0.5, 0.5, 0.5)) kGreen 10.0)),
-                                      Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue)),
+                                      Sphere (fromXYZ (0,   2.0, 0))    1.0   (Lambertian (SolidColor kBlue))
+                                    ] ++ lights
+                          lights = [
                                       Sphere (fromXYZ (0,   7.0, 0))    2.0   (Emitter (SolidColor (fromXYZ (4.0, 4.0, 4.0)))),
                                       XYRect 3.0 5.0 1.0 3.0 (-2.0) (Emitter (SolidColor (fromXYZ (4.0, 4.0, 4.0))))
-                                    ]
+                                   ]
                           lookAt      = fromXYZ (13.0, 2.0, 3.0)
                           lookFrom    = fromXYZ (13.0, 4.0, 0.0)
                           up          = fromXYZ (0, 1.0, 0)
@@ -117,18 +122,19 @@ createSimpleLightScene width height spp recursiveDepth background = (buildScene 
                           camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
 
 createCornellBoxScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
-createCornellBoxScene width height spp recursiveDepth background = (buildScene objects recursiveDepth background, camera)
+createCornellBoxScene width height spp recursiveDepth background = (buildScene objects lights recursiveDepth background, camera)
                     where objects = [
                                       YZRect 0 555.0 0 555.0 555.0  green,
                                       YZRect 0 555.0 0 555.0 0      red,
-                                      FlipFace $ XZRect 213.0 343.0 227.0 332.0 554.0 light,
                                       XZRect 0 555.0 0 555.0 0 white, -- floor
+                                      --FlipFace $ XZRect 213.0 343.0 227.0 332.0 554.0 light,
                                       XZRect 0 555.0 0 555.0 555.0 white,
                                       XYRect 0 555.0 0 555.0 555.0 white,
-                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 white,
-                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 blue
+                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 dielectric,
+                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 metal
                                       --createBox (fromXYZ (200, 0, 170)) (fromXYZ (390, 300, 230)) white
-                                    ]
+                                    ] ++ lights
+                          lights = FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 light) : [Sphere (fromXYZ (150, 100.0, 230)) 100.0 dielectric]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
                           green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)

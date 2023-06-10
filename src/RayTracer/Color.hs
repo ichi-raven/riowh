@@ -30,6 +30,14 @@ toneMapping src = fromXYZ (mapping r, mapping g, mapping b)
                   where (r, g, b) = toXYZ src
                         mapping   = sqrt 
 
+removeNaN :: Color -> Color
+removeNaN src = fromXYZ (nr, ng, nb)
+            where (r, g, b) = toXYZ src
+                  -- NaN is not equal to itself
+                  nr = if r == r then r else 0.0
+                  ng = if g == g then g else 0.0
+                  nb = if b == b then b else 0.0
+
 --{-# INLINE packR8G8B8A8 #-}
 packR8G8B8A8 :: Color -> Word32
 packR8G8B8A8 color = shiftL ur 24 .|. shiftL ug 16 .|. shiftL ub 8

@@ -61,3 +61,14 @@ randomCosineDirection gen = do
                                 x   = cos phi * sqrt r2
                                 y   = sin phi * sqrt r2
                             return $ fromXYZ (x, y, z)
+
+randomToSphere :: StatefulGen genType m => Double -> Double -> genType -> m Direction
+randomToSphere radius distanceSquared gen = do 
+                                        r1 <- uniformRM (0.0, 1.0) gen
+                                        r2 <- uniformRM (0.0, 1.0) gen
+                                        let z   = 1.0 + r2 * (sqrt (1.0 - radius * radius / distanceSquared) - 1.0)
+                                            phi = 2 * kPi * r1
+                                            sq = sqrt (1.0 - z * z)
+                                            x = cos phi * sq
+                                            y = sin phi * sq
+                                        return $ fromXYZ (x, y, z)

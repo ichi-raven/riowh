@@ -1,26 +1,23 @@
-{-# OPTIONS -Wincomplete-patterns #-}
-{-# LANGUAGE BlockArguments #-}
-
 module Main where
 
 import RayTracer.Scene
 import RayTracer.Output
 import RayTracer.Camera
 import RayTracer.Renderer
+import RayTracer.Color (kBlack, kWhite)
 
 import Data.Time
 import GHC.Conc (numCapabilities)
-import RayTracer.Color (kBlack, kWhite)
 
 main :: IO ()
 main = do
     -- exec time measurement (start)
     startTime <- getCurrentTime
 
-    -- rendering parameter
+    -- parameter
     let width           = 500
         height          = 500
-        spp             = 20
+        spp             = 5000
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 

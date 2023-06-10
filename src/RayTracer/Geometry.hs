@@ -13,6 +13,8 @@ module RayTracer.Geometry
     module RayTracer.Ray
 ) where
 
+import RayTracer.Utility
+import RayTracer.Random
 import RayTracer.Ray
 import RayTracer.Material
 
@@ -54,10 +56,14 @@ data HittableType =
     _k        :: !Double,
     _mat      :: !MaterialType
   }
+  | List
+  {
+    _list :: [HittableType]
+  }
   | Box
   {
     _aabb   :: !AABB,
-    _sides  :: ![HittableType]
+    _sides  :: !HittableType
   }
   | Translate
   {
@@ -81,7 +87,7 @@ data AABB = AABB
     _maxPos :: !Point
   } deriving (Generic, NFData)
 
--- return the closer t under the assumption that one of t1 and t2 is always inside [tmin, tmax]
+-- return the closer t under the assumption that one of t1 and t2 is inside [tmin, tmax]
 {-# INLINE closer #-}
 closer :: Double -> Double -> Double -> Double -> Double
 closer tmin tmax t1 t2 = if tmin < t1 && tmax > t1
@@ -102,7 +108,7 @@ createBox :: Point -> Point -> MaterialType -> HittableType
 createBox minPos maxPos mat = Box (AABB minPos maxPos) sides
                           where (ix, iy, iz) = toXYZ minPos
                                 (ax, ay, az) = toXYZ maxPos
-                                sides = [
+                                sides = List [
                                           XYRect ix ax iy ay az mat,
                                           XYRect ix ax iy ay iz mat,
                                           XZRect ix ax iz az ay mat,
@@ -117,6 +123,7 @@ createAABB (Sphere pos radius _)      = AABB (pos <-> fill radius) (pos <+> fill
 createAABB (XYRect x0 x1 y0 y1 k _)   = AABB (fromXYZ (x0, y0, k - 0.0001)) (fromXYZ (x1, y1, k + 0.0001))
 createAABB (XZRect x0 x1 z0 z1 k _)   = AABB (fromXYZ (x0, k - 0.0001, z0)) (fromXYZ (x1, k + 0.0001, z1))
 createAABB (YZRect y0 y1 z0 z1 k _)   = AABB (fromXYZ (k - 0.0001, y0, z0)) (fromXYZ (k + 0.0001, y1, z1))
+createAABB (List list)                = foldl1' surroundingAABB $ map createAABB list
 createAABB (Box aabb _)               = aabb
 createAABB (BVH aabb _ _)             = aabb
 createAABB (Translate object offset)  = AABB (minPos <+> offset) (maxPos <+> offset)
@@ -201,7 +208,9 @@ hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
                                                         frontFace     = (rdir .* outwardNormal) <= 0
                                                         normal        = if frontFace then outwardNormal else outwardNormal .^ (-1.0)
 
-hit (Box _ sides) ray tmin tmax = hitToList sides ray tmin tmax
+hit (List list) ray tmin tmax = hitToList list ray tmin tmax
+
+hit (Box _ sides) ray tmin tmax = hit sides ray tmin tmax
 
 hit (Translate object offset) ray tmin tmax = case hit object movedRay tmin tmax of
                                                 Nothing -> Nothing
@@ -260,26 +269,55 @@ hitAABB (AABB minPos maxPos) ray tmin tmax = inSlabs
                                           (x, y, z)     = toXYZ (t1s <-> t0s)
                                           inSlabs       = x >= 0.0 && y >= 0.0 && z >= 0.0
 
-pdfValue :: HittableType -> Point -> Direction -> Double 
+pdfValue :: HittableType -> Point -> Direction -> Double
+pdfValue (Sphere position radius mat) from direction = case hit this (Ray from direction) 0.001 kInfinity of
+                                                        Just hr -> 1.0 / solidAngle
+                                                            where co    = position <-> from
+                                                                  sqnco = norm co * norm co
+                                                                  cosThetaMax = sqrt $ 1 - radius * radius / sqnco
+                                                                  solidAngle  = 2.0 * kPi * (1.0 - cosThetaMax)
+                                                        Nothing -> 0.0
+                                                      where this = Sphere position radius mat
 pdfValue (XZRect x0 x1 z0 z1 k mat) from direction = case hit this (Ray from direction) 0.001 kInfinity of
                                                       Just hr -> distSq / (cosine * area)
                                                         where area    = (x1 - x0) * (z1 - z0)
                                                               t       = _t hr
                                                               normal  = _normal hr
-                                                              ndir    = norm direction 
+                                                              ndir    = norm direction
                                                               distSq  = t * t * ndir * ndir
                                                               cosine  = abs $ direction .* normal / ndir
                                                       Nothing -> 0.0
                                                     where this = XZRect x0 x1 z0 z1 k mat
 
+pdfValue (List objects) from direction = foldl1' (+) pdfValues / fromIntegral (length objects)
+                                      where per o = pdfValue o from direction
+                                            pdfValues = map per objects
+
+pdfValue (FlipFace object) from direction = pdfValue object from direction
+
 pdfValue _ _ _  = 0.0 --TODO
 
-randomIn :: StatefulGen genType m => HittableType -> Point -> genType -> m Direction 
+randomIn :: StatefulGen genType m => HittableType -> Point -> genType -> m Direction
+randomIn (Sphere position radius mat) from gen = do
+                                              let direction = position <-> from
+                                                  nd = norm direction
+                                                  distSq    =  nd * nd
+                                                  uvw = buildFromW direction
+                                              rts <- randomToSphere radius distSq gen
+                                              return $ localPos uvw rts
+
 randomIn (XZRect x0 x1 z0 z1 k mat) from gen = do
                                             rx <- uniformRM (x0, x1) gen
-                                            rz <- uniformRM (z0, z1) gen 
+                                            rz <- uniformRM (z0, z1) gen
                                             let randomPoint = fromXYZ (rx, k, rz)
                                             return $ randomPoint <-> from
+
+randomIn (List objects) from gen = do
+                                ridx <- uniformRM (0, length objects - 1) gen
+                                let chosen = objects !! ridx
+                                randomIn chosen from gen
+
+randomIn (FlipFace object) from gen = randomIn object from gen
 
 randomIn _ _ _ = return $ fromXYZ (1.0, 0, 0) --TODO
 
