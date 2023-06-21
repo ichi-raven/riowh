@@ -69,8 +69,8 @@ sample scene camera x y gen = do
                               traceRay ray 0 kInfinity recursiveDepth gen scene
 
 --{-# INLINE iterateStatefulGen #-}
-iterateStatefulGen :: RandomGen genType => Scene -> Camera -> Int -> Int -> (Color, genType) -> [Color]
-iterateStatefulGen scene camera x y (e, gen) = removeNaN e : iterateStatefulGen scene camera x y (runStateGen gen (sample scene camera x y))
+iteratePRNG :: RandomGen genType => Scene -> Camera -> Int -> Int -> (Color, genType) -> [Color]
+iteratePRNG scene camera x y (e, gen) = correctNaN e : iteratePRNG scene camera x y (runStateGen gen (sample scene camera x y))
 
 -- rendering one pixel by sampling "spp" times
 --{-# INLINE renderPixel #-}
@@ -79,10 +79,9 @@ renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegra
                   where height   = _height  camera
                         spp      = _spp     camera
                         seed     = x * height + y + 42 -- praying to the ANSWER OF ALL
-                        gen      = mkStdGen seed
+                        prng     = mkStdGen seed
                         takeDrop = drop 1 . take (spp + 1)
-                        -- NO parallelization (too much SPARKs)
-                        sampledColors = takeDrop $ iterateStatefulGen scene camera x y (kBlack, gen)
+                        sampledColors = takeDrop $ iteratePRNG scene camera x y (kBlack, prng)
 
 -- rendering (split tasks parallel according to the number of runtime threads)
 --{-# INLINE render #-}

@@ -30,8 +30,8 @@ toneMapping src = fromXYZ (mapping r, mapping g, mapping b)
                   where (r, g, b) = toXYZ src
                         mapping   = sqrt 
 
-removeNaN :: Color -> Color
-removeNaN src = fromXYZ (nr, ng, nb)
+correctNaN :: Color -> Color
+correctNaN src = fromXYZ (nr, ng, nb)
             where (r, g, b) = toXYZ src
                   -- NaN is not equal to itself
                   nr = if r == r then r else 0.0

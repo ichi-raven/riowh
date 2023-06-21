@@ -130,11 +130,14 @@ createCornellBoxScene width height spp recursiveDepth background = (buildScene o
                                       --FlipFace $ XZRect 213.0 343.0 227.0 332.0 554.0 light,
                                       XZRect 0 555.0 0 555.0 555.0 white,
                                       XYRect 0 555.0 0 555.0 555.0 white,
-                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 dielectric,
-                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 metal
-                                      --createBox (fromXYZ (200, 0, 170)) (fromXYZ (390, 300, 230)) white
+                                      --createBox (fromXYZ (200, 170, 230)) (fromXYZ (390, 300, 230)) white,
+                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
+                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
                                     ] ++ lights
-                          lights = FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 light) : [Sphere (fromXYZ (150, 100.0, 230)) 100.0 dielectric]
+                          lights =  [
+                                      FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 light),
+                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                    ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
                           green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)

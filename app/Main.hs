@@ -17,7 +17,7 @@ main = do
     -- parameter
     let width           = 500
         height          = 500
-        spp             = 5000
+        spp             = 1000
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 

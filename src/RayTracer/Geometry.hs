@@ -65,6 +65,13 @@ data HittableType =
     _aabb   :: !AABB,
     _sides  :: !HittableType
   }
+  | Transform
+  {
+    _object     :: !HittableType,
+    _rotAxis    :: !Direction,
+    _rotAngle   :: !Double,
+    _translate  :: !Point
+  }
   | Translate
   {
     _object :: !HittableType,
@@ -86,6 +93,28 @@ data AABB = AABB
     _minPos :: !Point,
     _maxPos :: !Point
   } deriving (Generic, NFData)
+
+{-# INLINE getRotMat #-}
+getRotMat :: Direction -> Double -> Matrix
+getRotMat axis angle = rotMat
+            where (ax, ay, az) = toXYZ axis
+                  c   = cos angle
+                  s   = sin angle
+                  c1  = 1 - c
+                  r1  = fromXYZ(c + ax * ax * c1, ax * ay * c1 - az * s, az * ax * c1 + ay * s)
+                  r2  = fromXYZ(ax * ay * c1 + az * s, c + ay * ay * c1, ay * az * c1 - ax * s)
+                  r3  = fromXYZ(az * ax * c1 - ay * s, ay * az * c1 + ax * s, c + az * az * c1)
+                  rotMat = fromRows(r1, r2, r3)
+
+-- TODO
+getRotateAABBPoints :: Point -> Point -> Matrix -> [Point]
+getRotateAABBPoints minPos maxPos mat = points
+                                where from          = toXYZ $ mxv mat minPos
+                                      (rx, ry, rz)  = toXYZ $ mxv mat $ maxPos <-> minPos
+                                      onb           = ONB (fromXYZ (rx )) 
+                                      points = [from <+> ]
+
+                                      
 
 -- return the closer t under the assumption that one of t1 and t2 is inside [tmin, tmax]
 {-# INLINE closer #-}
@@ -126,6 +155,13 @@ createAABB (YZRect y0 y1 z0 z1 k _)   = AABB (fromXYZ (k - 0.0001, y0, z0)) (fro
 createAABB (List list)                = foldl1' surroundingAABB $ map createAABB list
 createAABB (Box aabb _)               = aabb
 createAABB (BVH aabb _ _)             = aabb
+-- TODO
+createAABB (Transform object axis angle translate)  = AABB (minPos <+> offset) (maxPos <+> offset)
+                                    where aabb   = createAABB object
+                                          minPos = --_minPos aabb
+                                          maxPos = --_maxPos aabb
+
+
 createAABB (Translate object offset)  = AABB (minPos <+> offset) (maxPos <+> offset)
                                     where aabb   = createAABB object
                                           minPos = _minPos aabb
@@ -211,6 +247,21 @@ hit (YZRect y0 y1 z0 z1 k mat) ray tmin tmax = if (t < tmin || t > tmax)
 hit (List list) ray tmin tmax = hitToList list ray tmin tmax
 
 hit (Box _ sides) ray tmin tmax = hit sides ray tmin tmax
+
+hit (Transform object axis angle translate) ray tmin tmax = case hit object movedRay tmin tmax of
+                                                Nothing -> Nothing
+                                                Just hr -> Just nhr
+                                                      where (HitRecord point outwardNormal t u v _ mat) = hr
+                                                            translatedPos = offset <+> point
+                                                            nrdir         = _direction movedRay
+                                                            frontFace     = (nrdir .* outwardNormal) <= 0
+                                                            rotNormal     = mxv rotMat outwardNormal 
+                                                            normal        = if frontFace then rotNormal else rotNormal .^ (-1.0)
+                                                            nhr           = HitRecord translatedPos normal t u v frontFace mat
+                                          where orig      = _origin ray
+                                                dir       = _direction ray
+                                                rotMat    = getRotMat axis (deg2rad -angle)
+                                                movedRay  = Ray (orig <-> offset) (mxv rotMat dir)
 
 hit (Translate object offset) ray tmin tmax = case hit object movedRay tmin tmax of
                                                 Nothing -> Nothing

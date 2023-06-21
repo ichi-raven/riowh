@@ -113,3 +113,15 @@ buildFromW normal = ONB u v w
                       a = fromXYZ $ if abs wx > 0.9 then (0, 1.0, 0) else (1.0, 0, 0)
                       v = normalize $ w >< a
                       u = w >< v
+
+maximum :: CVec3 -> CVec3 -> CVec3
+maximum v1 v2 = nv
+            where (x1, y1, z1) = toXYZ v1
+                  (x2, y2, z2) = toXYZ v2
+                  nv = fromXYZ(max x1 x2, max y1 y2, max z1 z2)
+
+minimum :: CVec3 -> CVec3 -> CVec3
+minimum v1 v2 = nv
+            where (x1, y1, z1) = toXYZ v1
+                  (x2, y2, z2) = toXYZ v2
+                  nv = fromXYZ(min x1 x2, min y1 y2, min z1 z2)
