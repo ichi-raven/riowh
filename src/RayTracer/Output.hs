@@ -43,8 +43,25 @@ outputImageByPPM outputFileName image = do
                                         hPutStr handle $ T.unpack $ T.append (ppmHeader width height) (ppmFormat image)
                                         -- close file
                                         hClose handle
-                                        
-                                        
+
+-- output serial images (animation)
+outputSerialImagesByPPM :: String -> [Image] -> IO()
+outputSerialImagesByPPM baseOutputFileName images = outputSelectedSerialImagesByPPM baseOutputFileName (length images) images
+
+-- output selected(truncated) serial images (animation)
+outputSelectedSerialImagesByPPM :: String -> Int -> [Image] -> IO()
+outputSelectedSerialImagesByPPM baseOutputFileName frameNum (image:imgs) = do 
+                                                                let number      = frameNum - (length imgs) - 1
+                                                                    splitted    = splitBy isDot baseOutputFileName
+                                                                    name        = concat $ init splitted
+                                                                    ext         = last splitted                                                                    
+                                                                    fileName    = name ++ (show number) ++ "." ++ ext
+                                                                outputImageByPPM fileName image
+                                                                outputSelectedSerialImagesByPPM baseOutputFileName frameNum imgs
+
+outputSelectedSerialImagesByPPM _ _ [] = return ()
+
+
 outputInfo :: UTCTime -> UTCTime -> String -> IO()
 outputInfo startTime endTime outputFile = do
                                         let execTime = diffUTCTime endTime startTime

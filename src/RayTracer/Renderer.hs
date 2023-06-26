@@ -28,12 +28,12 @@ importanceSampling ray tmax depth emit hr sr gen scene = if _isSpecular sr
                                                                 normal      = _normal hr
                                                                 lights      = _lights scene
                                                                 hittablePDF = HittablePDF lights point
-                                                                mixturePDF  = MixturePDF hittablePDF (_pdf sr)
-                                                            direction <- generateAlongPDF mixturePDF gen
+                                                                usingPDF  = if length (_list lights) == 0 then _pdf sr else MixturePDF hittablePDF (_pdf sr)
+                                                            direction <- generateAlongPDF usingPDF gen
                                                             let scatter        = Ray point direction
                                                                 mat            = _surfaceMat hr
                                                                 correctedAtten = _attenuation sr .^ scatteringPDF mat ray hr scatter
-                                                                invPDFVal      = 1.0 / value mixturePDF direction
+                                                                invPDFVal      = 1.0 / value usingPDF direction
                                                             res <- traceRay scatter 0.001 tmax (depth - 1) gen scene
                                                             return $ emit <+> zipWith (*) correctedAtten res .^ invPDFVal
 
@@ -91,3 +91,10 @@ render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parLis
                                        height     = _height camera
                                        splitNum   = div (width * height) numCapabilities
                                        perPixel   = (((postProduction .) .) .) . renderPixel
+
+-- rendering continuous scenes
+renderAnimation :: [(Scene, Camera)] -> [Image]
+renderAnimation (sc:scs) = render scene camera : renderAnimation scs
+                        where scene  = fst sc
+                              camera = snd sc
+renderAnimation [] = []

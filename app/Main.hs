@@ -15,15 +15,15 @@ main = do
     startTime <- getCurrentTime
 
     -- parameter
-    let width           = 500
-        height          = 500
-        spp             = 1000
+    let width           = 1920
+        height          = 1080
+        spp             = 1024
         recursiveDepth  = 10
         outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 
 
     -- build scene and camera
-    let backgroundColor = kBlack
+    let backgroundColor = kWhite
         (scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
         --(scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
     putStrLn $ "object num in scene : " ++ show (_objectNum scene)

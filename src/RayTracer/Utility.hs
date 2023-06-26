@@ -125,3 +125,11 @@ minimum v1 v2 = nv
             where (x1, y1, z1) = toXYZ v1
                   (x2, y2, z2) = toXYZ v2
                   nv = fromXYZ(min x1 x2, min y1 y2, min z1 z2)
+
+splitBy :: (a -> Bool) -> [a] -> [[a]]
+splitBy p [] = []
+splitBy p xs = a : (splitBy p $ dropWhile p $ b)
+   where (a, b) = break p xs
+    
+isDot :: Char -> Bool
+isDot c = c == '.'
