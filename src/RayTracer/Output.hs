@@ -1,6 +1,8 @@
 module RayTracer.Output 
 (
     outputImageByPPM,
+    outputSerialImagesByPPM,
+    outputSelectedSerialImagesByPPM,
     outputInfo
 ) where 
 

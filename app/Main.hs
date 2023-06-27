@@ -1,5 +1,6 @@
 module Main where
 
+import RayTracer.Animation
 import RayTracer.Scene
 import RayTracer.Output
 import RayTracer.Camera
@@ -15,28 +16,37 @@ main = do
     startTime <- getCurrentTime
 
     -- parameter
-    let width           = 1920
-        height          = 1080
-        spp             = 1024
+    let width           = 500
+        height          = 500
+        spp             = 30
+        frame           = 10
+        deltaTime       = 0.16
         recursiveDepth  = 10
-        outputFileName  = "output(" ++ show spp ++ "spp" ++ ").ppm"
+        outputFileName  = "anim/output(" ++ show spp ++ "spp" ++ ").ppm"
         infoFileName    = "info.txt" 
+
 
     -- build scene and camera
     let backgroundColor = kWhite
-        (scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
+        --(scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
         --(scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
-    putStrLn $ "object num in scene : " ++ show (_objectNum scene)
+        --(scene, camera) = createTestSpheresScene width height spp recursiveDepth backgroundColor
+        animation = createTestAnimatedScene width height spp frame deltaTime recursiveDepth backgroundColor
+        objectNum = _objectNum $ fst $ head animation
+        --objectNum = _objectNum scene
+    putStrLn $ "object num in scene : " ++ show objectNum
 
     -- runtime threads num
     let nc = numCapabilities
     putStrLn $ "start rendering... (Running in " ++ if nc > 1 then show nc ++ " threads parallel)" else "serial)"
 
     -- rendering
-    let image = render scene camera
+    --let image = render scene camera
+    let images = renderAnimation animation
 
     -- output
-    outputImageByPPM outputFileName image
+    --outputImageByPPM outputFileName image
+    outputSerialImagesByPPM outputFileName images 
 
     -- exec time measurement (end)
     endTime <- getCurrentTime

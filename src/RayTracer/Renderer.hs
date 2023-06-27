@@ -1,6 +1,7 @@
 module RayTracer.Renderer
 (
-    render
+    render,
+    renderAnimation
 ) where
 
 import RayTracer.Scene
@@ -28,7 +29,7 @@ importanceSampling ray tmax depth emit hr sr gen scene = if _isSpecular sr
                                                                 normal      = _normal hr
                                                                 lights      = _lights scene
                                                                 hittablePDF = HittablePDF lights point
-                                                                usingPDF  = if length (_list lights) == 0 then _pdf sr else MixturePDF hittablePDF (_pdf sr)
+                                                                usingPDF  = if null (_list lights) then _pdf sr else MixturePDF hittablePDF (_pdf sr)
                                                             direction <- generateAlongPDF usingPDF gen
                                                             let scatter        = Ray point direction
                                                                 mat            = _surfaceMat hr

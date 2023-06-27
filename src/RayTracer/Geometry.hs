@@ -344,6 +344,8 @@ pdfValue (List objects) from direction = foldl1' (+) pdfValues / fromIntegral (l
                                       where per o = pdfValue o from direction
                                             pdfValues = map per objects
 
+pdfValue (Translate object offset) from direction = pdfValue object (from <+> offset) direction
+
 pdfValue (FlipFace object) from direction = pdfValue object from direction
 
 pdfValue _ _ _  = 0.0 --TODO
@@ -362,6 +364,8 @@ randomIn (XZRect x0 x1 z0 z1 k mat) from gen = do
                                             rz <- uniformRM (z0, z1) gen
                                             let randomPoint = fromXYZ (rx, k, rz)
                                             return $ randomPoint <-> from
+
+randomIn (Translate object offset) from gen = randomIn object (from <+> offset) gen
 
 randomIn (List objects) from gen = do
                                 ridx <- uniformRM (0, length objects - 1) gen
