@@ -87,7 +87,7 @@ renderPixel scene camera x y = foldl1' (<+>) sampledColors .^ (1.0 / fromIntegra
 -- rendering (split tasks parallel according to the number of runtime threads)
 --{-# INLINE render #-}
 render :: Scene -> Camera -> Image
-render scene camera = array ((0, 0), (width - 1, height - 1)) $ runEval $ parListChunk splitNum rdeepseq [((x, y), perPixel scene camera x y) | x <- [0..width - 1], y <- [0..height - 1]]
+render scene camera = array ((0, 0), (width, height)) $ runEval $ parListChunk splitNum rdeepseq [((x, y), perPixel scene camera x y) | x <- [0..width], y <- [0..height]]
                                  where width      = _width  camera
                                        height     = _height camera
                                        splitNum   = div (width * height) numCapabilities

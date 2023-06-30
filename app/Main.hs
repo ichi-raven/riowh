@@ -18,11 +18,12 @@ main = do
     -- parameter
     let width           = 500
         height          = 500
-        spp             = 30
+        spp             = 100
         frame           = 10
         deltaTime       = 0.16
         recursiveDepth  = 10
-        outputFileName  = "anim/output(" ++ show spp ++ "spp" ++ ").ppm"
+        --outputFileName  = "output(" ++ show spp ++ "spp" ++ ").png"
+        outputFileName  = "anim/output.png"
         infoFileName    = "info.txt" 
 
 
@@ -45,8 +46,8 @@ main = do
     let images = renderAnimation animation
 
     -- output
-    --outputImageByPPM outputFileName image
-    outputSerialImagesByPPM outputFileName images 
+    --output outputFileName image
+    outputSerialImages outputFileName images 
 
     -- exec time measurement (end)
     endTime <- getCurrentTime

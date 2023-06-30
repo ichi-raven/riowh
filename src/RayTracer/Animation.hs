@@ -46,7 +46,7 @@ transform frame deltaTime animObjects = (transLights ++ transOthers, transLights
                                           transOthers = map trans others
 
 animate :: Int -> Double -> [AnimateObject] -> [([HittableType], [HittableType])]
-animate frame deltaTime objects | frame >= 0 = animate (frame - 1) deltaTime objects ++ [transform (frame - 1) deltaTime objects]
+animate frame deltaTime objects | frame >= 0 = animate (frame - 1) deltaTime objects ++ [transform frame deltaTime objects]
                                 | otherwise  = []
 
 buildAnimatedScene :: [AnimateObject] -> Int -> Double -> Int -> Color -> [Scene]

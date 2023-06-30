@@ -45,12 +45,12 @@ packR8G8B8A8 color = shiftL ur 24 .|. shiftL ug 16 .|. shiftL ub 8
                         (ur, ug, ub)    = (floor (255.999 * r) :: Word32, floor (255.999 * g) :: Word32, floor (255.999 * b) :: Word32)
 
 --{-# INLINE unpackR8G8B8A8 #-}
-unpackR8G8B8A8 :: Word32 -> (Word32, Word32, Word32, Word32)
+unpackR8G8B8A8 :: Word32 -> (Word8, Word8, Word8, Word8)
 unpackR8G8B8A8 bytes = (r, g, b, a)
-                    where r = shiftR (bytes .&. 0xFF000000) 24  
-                          g = shiftR (bytes .&. 0x00FF0000) 16  
-                          b = shiftR (bytes .&. 0x0000FF00) 8   
-                          a =         bytes .&. 0x000000FF              
+                    where r = fromIntegral $ shiftR (bytes .&. 0xFF000000) 24  
+                          g = fromIntegral $ shiftR (bytes .&. 0x00FF0000) 16  
+                          b = fromIntegral $ shiftR (bytes .&. 0x0000FF00) 8   
+                          a = fromIntegral $         bytes .&. 0x000000FF              
 
 --{-# INLINE postProduction #-}
 postProduction :: Color -> Word32

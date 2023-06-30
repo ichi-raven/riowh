@@ -22,5 +22,10 @@ cabal.project.local
 .HTF/
 .ghc.environment.*
 
+anim/
 *.ppm
+*.png
+*.jpg
+*.bmp
+*.tiff
 *.txt
