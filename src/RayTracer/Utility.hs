@@ -131,5 +131,3 @@ splitBy p [] = []
 splitBy p xs = a : (splitBy p $ dropWhile p $ b)
    where (a, b) = break p xs
     
-isDot :: Char -> Bool
-isDot c = c == '.'

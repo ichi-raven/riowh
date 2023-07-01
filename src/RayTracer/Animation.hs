@@ -2,7 +2,8 @@
 
 module RayTracer.Animation 
 (
-    createTestAnimatedScene
+    createTestAnimatedScene,
+    createAnimatedCornellBoxScene
 )
 where
 
@@ -74,6 +75,47 @@ createTestAnimatedScene width height spp frame deltaTime recursiveDepth backgrou
                           vfov        = 90
                           distToFocus = norm $ lookFrom <-> lookAt
                           aperture    = 0.02
+                          camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
+                          scenes = buildAnimatedScene objects frame deltaTime recursiveDepth background
+                          sceneAndCameras = zip scenes $ take (length scenes) $ repeat camera
+
+
+createAnimatedCornellBoxScene :: Int -> Int -> Int -> Int -> Double -> Int -> Color ->  [(Scene, Camera)]
+createAnimatedCornellBoxScene width height spp frame deltaTime recursiveDepth background = sceneAndCameras
+                    where objects = [
+                                      AnimateObject leftWall    origin origin False,
+                                      AnimateObject rightWall   origin origin False,
+                                      AnimateObject floor       origin origin False, 
+                                      AnimateObject ceil        origin origin False,
+                                      AnimateObject backWall    origin origin False,
+                                      AnimateObject metalSphere (fromXYZ (45.0, 0, 0)) (fromXYZ (20.0, 0, 0)) False
+                                    ] ++ lights
+                          lights =  [
+                                      AnimateObject light            origin origin True,
+                                      AnimateObject dielectricSphere (fromXYZ (-45.0, 0, 0)) (fromXYZ (-20.0, 0, 0)) True
+                                    ]
+                          red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
+                          white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
+                          green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)
+                          blue  = Lambertian    $ SolidColor kBlue
+                          emit  = Emitter       $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
+                          metal = Metal (SolidColor kBlue) 0.6
+                          dielectric        = Dielectric 1.5
+                          leftWall          = YZRect 0 555.0 0 555.0 555.0  green
+                          rightWall         = YZRect 0 555.0 0 555.0 0      red
+                          backWall          = XYRect 0 555.0 0 555.0 555.0 white
+                          floor             = XZRect 0 555.0 0 555.0 0 white
+                          ceil              = XZRect 0 555.0 0 555.0 555.0 white
+                          light             = FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 emit)
+                          metalSphere       = Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal
+                          dielectricSphere  = Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+
+                          lookAt      = fromXYZ (278.0, 278.0, 0)
+                          lookFrom    = fromXYZ (278.0, 278.0, -800.0)
+                          up          = fromXYZ (0, 1.0, 0)
+                          vfov        = 40
+                          distToFocus = norm $ lookFrom <-> lookAt
+                          aperture    = 0.0
                           camera = createCamera width height spp lookFrom lookAt up vfov aperture distToFocus
                           scenes = buildAnimatedScene objects frame deltaTime recursiveDepth background
                           sceneAndCameras = zip scenes $ take (length scenes) $ repeat camera

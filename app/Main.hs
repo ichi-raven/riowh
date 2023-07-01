@@ -18,7 +18,7 @@ main = do
     -- parameter
     let width           = 500
         height          = 500
-        spp             = 100
+        spp             = 500
         frame           = 10
         deltaTime       = 0.16
         recursiveDepth  = 10
@@ -28,11 +28,11 @@ main = do
 
 
     -- build scene and camera
-    let backgroundColor = kWhite
+    let backgroundColor = kBlack
         --(scene, camera) = createCornellBoxScene width height spp recursiveDepth backgroundColor
         --(scene, camera) = createRandomSpheresScene 42 width height spp recursiveDepth backgroundColor
         --(scene, camera) = createTestSpheresScene width height spp recursiveDepth backgroundColor
-        animation = createTestAnimatedScene width height spp frame deltaTime recursiveDepth backgroundColor
+        animation = createAnimatedCornellBoxScene width height spp frame deltaTime recursiveDepth backgroundColor
         objectNum = _objectNum $ fst $ head animation
         --objectNum = _objectNum scene
     putStrLn $ "object num in scene : " ++ show objectNum

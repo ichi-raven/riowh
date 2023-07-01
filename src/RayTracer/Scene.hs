@@ -124,27 +124,32 @@ createSimpleLightScene width height spp recursiveDepth background = (buildScene 
 createCornellBoxScene :: Int -> Int -> Int -> Int -> Color -> (Scene, Camera)
 createCornellBoxScene width height spp recursiveDepth background = (buildScene objects lights recursiveDepth background, camera)
                     where objects = [
-                                      YZRect 0 555.0 0 555.0 555.0  green,
-                                      YZRect 0 555.0 0 555.0 0      red,
-                                      XZRect 0 555.0 0 555.0 0 white, -- floor
-                                      --FlipFace $ XZRect 213.0 343.0 227.0 332.0 554.0 light,
-                                      XZRect 0 555.0 0 555.0 555.0 white,
-                                      XYRect 0 555.0 0 555.0 555.0 white,
-                                      --createBox (fromXYZ (200, 170, 230)) (fromXYZ (390, 300, 230)) white,
-                                      Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal,
-                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                      leftWall,
+                                      rightWall,
+                                      floor, 
+                                      ceil,
+                                      backWall,
+                                      metalSphere
                                     ] ++ lights
                           lights =  [
-                                      FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 light),
-                                      Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
+                                      light,
+                                      dielectricSphere
                                     ]
                           red   = Lambertian    $ SolidColor $ fromXYZ (0.65, 0.05, 0.05)
                           white = Lambertian    $ SolidColor $ fromXYZ (0.73, 0.73, 0.73)
                           green = Lambertian    $ SolidColor $ fromXYZ (0.12, 0.45, 0.15)
                           blue  = Lambertian    $ SolidColor kBlue
-                          light = Emitter       $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
+                          emit  = Emitter       $ SolidColor $ fromXYZ (15.0, 15.0, 15.0)
                           metal = Metal (SolidColor kBlue) 0.6
                           dielectric = Dielectric 1.5
+                          leftWall = YZRect 0 555.0 0 555.0 555.0  green
+                          rightWall = YZRect 0 555.0 0 555.0 0      red
+                          backWall = XYRect 0 555.0 0 555.0 555.0 white
+                          floor = XZRect 0 555.0 0 555.0 0 white
+                          ceil = XZRect 0 555.0 0 555.0 555.0 white
+                          light = FlipFace (XZRect 213.0 343.0 227.0 332.0 554.0 emit)
+                          metalSphere = Sphere (fromXYZ (150, 100.0, 230)) 100.0 metal
+                          dielectricSphere = Sphere (fromXYZ (390, 100.0, 230)) 100.0 dielectric
 
                           lookAt      = fromXYZ (278.0, 278.0, 0)
                           lookFrom    = fromXYZ (278.0, 278.0, -800.0)

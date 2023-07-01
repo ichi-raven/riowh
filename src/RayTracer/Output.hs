@@ -71,13 +71,13 @@ chooseOutput :: String -> (String -> Image -> IO())
 chooseOutput ext = case ext of
                         "bmp"  -> outputImageByBmp
                         "png"  -> outputImageByPNG
-                        "jpg"  -> outputImageByJPG
+                        "jpg"  -> outputImageByJPG -- not recommended
                         "tiff" -> outputImageByTiff
                         "ppm"  -> outputImageByPPM
 
 output :: String -> Image -> IO()
 output path image = outputFunc path image
-                 where  splitted    = splitBy isDot path
+                 where  splitted    = splitBy (== '.') path
                         name        = concat $ init splitted
                         ext         = last splitted
                         outputFunc  = chooseOutput ext
@@ -90,11 +90,12 @@ outputSerialImages baseOutputFilePath images = outputSelectedSerialImages baseOu
 outputSelectedSerialImages :: String -> Int -> [Image] -> IO()
 outputSelectedSerialImages baseOutputFilePath frameNum (image:imgs) = do 
                                                                 let number      = frameNum - (length imgs) - 1
-                                                                    splitted    = splitBy isDot baseOutputFilePath
+                                                                    splitted    = splitBy (== '.') baseOutputFilePath
                                                                     name        = concat $ init splitted
                                                                     ext         = last splitted                                                                    
                                                                     fileName    = name ++ (show number) ++ "." ++ ext
                                                                 (chooseOutput ext) fileName image
+                                                                putStrLn $ "rendered frame " ++ (show number) 
                                                                 outputSelectedSerialImages baseOutputFilePath frameNum imgs
 
 outputSelectedSerialImages _ _ [] = return ()

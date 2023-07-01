@@ -40,15 +40,9 @@ createCamera width height spp lookFrom lookAt up vfov aperture focusDist = Camer
 -- return the ray corresponding to viewport's uv coord
 --{-# INLINE getRay #-}
 getRay :: StatefulGen genType m => Double -> Double -> Camera -> genType -> m Ray
-getRay s t camera gen = do
+getRay s t (Camera orig llc horizontal vertical lensRadius uvw _ _ _) gen = do
                         rdu <- randomInUnitDisk gen
-                        let orig        = _camPoint         camera
-                            llc         = _lowerLeftCorner  camera
-                            horizontal  = _horizontal       camera
-                            vertical    = _vertical         camera
-                            lensRadius  = _lensRadius       camera
-                            uvw         = _basis            camera 
-                            u           = _ub               uvw
+                        let u           = _ub               uvw
                             v           = _vb               uvw
                             (x, y, _)   = toXYZ (rdu .^ lensRadius)
                             offset      = (u .^ x) <+> (v .^ y)

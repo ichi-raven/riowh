@@ -84,5 +84,5 @@ executable rayTracer
     ghc-options: -O2
                  -rtsopts -threaded
                  -j4
-                 "-with-rtsopts=-N32"
+                 "-with-rtsopts=-N8"
     --ghc-options: -O2 -threaded -fprof-auto -j12 "-with-rtsopts=-N -p -s -hc -lf -i0.1"
